@@ -23,6 +23,10 @@ class Club {
     public function add_menu($title, $caps, $slug) {
         add_submenu_page($this->parrent_page, $title, $title, $caps, $slug);
     }
+    
+    public function register_menu($title, $caps, $file){
+        $this->add_menu($title, $caps, "club/admin/" . $file);
+    }
 
     public function createMenu() {
         add_menu_page('Club', 'Club', 'club_member', $this->parrent_page, null, 'dashicons-id-alt');
