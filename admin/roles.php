@@ -19,6 +19,7 @@ $not_editable = array('administrator', 'club_admin');
                     <?php foreach ($caps as $cap) { ?>
                         <th><?php echo $cap ?></th>
                     <?php } ?>
+                    <th>&nbsp;</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,7 +42,14 @@ $not_editable = array('administrator', 'club_admin');
                             $opts = $disabled . $checked;
                             $id = $key . ";" . $cap;
                             ?>
-                            <th><input id="<?php echo $id; ?>" type="checkbox"<?php echo $opts; ?>/></th>
+                            <td><input id="<?php echo $id; ?>" type="checkbox"<?php echo $opts; ?>/></td>
+                        <?php } ?>
+                        <?php if (substr($key, 0, 5) === "club_" && $key != "club_admin" && $key != "club_member") { ?>
+                            <td>
+                                <a href="#" class="delete_role" data-key="<?php echo $key; ?>"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                            </td>
+                        <?php } else { ?>
+                            <td>&nbsp;</td>
                         <?php } ?>
                     </tr>
                 <?php } ?>
@@ -57,11 +65,32 @@ $not_editable = array('administrator', 'club_admin');
                         <h4 class="modal-title" id="myModalLabel">Neue Rolle</h4>
                     </div>
                     <div class="modal-body">
-                        ...
+                        <form>
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" class="form-control" id="name" placeholder="Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="displayName">Anzeige Name</label>
+                                <input type="text" class="form-control" id="displayName" placeholder="Anzeige Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="parrent">Erbt von</label>
+                                <select class="form-control" id="parrent">
+                                    <?php
+                                    foreach ($roles as $key => $role) {
+                                        ?>
+                                        <option value="<?php echo $key; ?>"><?php echo translate_user_role($role["name"]); ?></option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Schliessen</button>
-                        <button type="button" class="btn btn-primary">Speichern</button>
+                        <button type="button" class="btn btn-primary" id="btnSaveNew">Speichern</button>
                     </div>
                 </div>
             </div>
@@ -84,15 +113,48 @@ $not_editable = array('administrator', 'club_admin');
                 }
                 data[role][cap] = checked;
             });
-            club_ajax_post("save_all", {'roles': data}, function(response){
-                if(response === "ok"){
+            club_ajax_post("save_all_role", {'roles': data}, function (response) {
+                if (response === "ok") {
                     location.reload();
                 }
             });
         });
-        
-        $j("#btnNew").on("click", function (){
+
+        $j("#btnNew").on("click", function () {
             $j('#newRole').modal('show');
         });
+
+        $j("#btnSaveNew").on("click", function () {
+            var data = {
+                'name': $j("#name").val(),
+                'displayName': $j("#displayName").val(),
+                'parrent': $j("#parrent").val()
+            };
+            if (data.name === "" || data.displayName === "") {
+                alert("Bitte alle Felder ausfüllen");
+                return;
+            }
+            club_ajax_post("save_new_role", data, function (response) {
+                if (response === "ok") {
+                    location.reload();
+                } else {
+                    alert(response);
+                }
+            });
+        });
+        $j(".delete_role").on("click", function () {
+            var key = $j(this).data("key");
+            var conf = confirm("Sind sie sicher, dass sie die Rolle " + key + " löschen wollen?");
+            if (conf) {
+                club_ajax_post("delete_role", {'key': key}, function (response) {
+                    if (response === "ok") {
+                        location.reload();
+                    } else {
+                        alert(response);
+                    }
+                });
+            }
+        });
+
     });
 </script>
