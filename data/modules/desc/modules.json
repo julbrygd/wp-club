@@ -1,0 +1,6 @@
+{
+    "name": "modules",
+    "class": "\\Club\\Modules\\ModuleManagement",
+    "caps": "club_admin",
+    "description": "Modul Verwaltung"
+}

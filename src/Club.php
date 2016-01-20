@@ -13,6 +13,7 @@ class Club {
     private $parrent_page;
     private $plugin_url;
     private $modules;
+    private $base_path;
 
     private function __construct() {
         $this->parrent_page = "club/admin/index.php";
@@ -20,17 +21,18 @@ class Club {
         $this->modules = array();
     }
 
-    public function add_menu($title, $caps, $slug) {
-        add_submenu_page($this->parrent_page, $title, $title, $caps, $slug);
+    public function add_menu($title, $caps, $slug, $function = '') {
+        add_submenu_page($this->parrent_page, $title, $title, $caps, $slug, $function);
     }
-    
-    public function register_menu($title, $caps, $file){
-        $this->add_menu($title, $caps, "club/admin/" . $file);
+
+    public function register_menu($title, $caps, $file) {
+        $this->add_menu($title, $caps, $file);
     }
 
     public function createMenu() {
         add_menu_page('Club', 'Club', 'club_member', $this->parrent_page, null, 'dashicons-id-alt');
-        $this->add_menu("Club Roles", 'club_admin', "club/admin/roles.php");
+        //$this->add_menu("Club Roles", 'club_admin', 'club/admin/roles.php');
+        $this->getModules()->registerMenus();
     }
 
     public function add_scripts() {
@@ -44,18 +46,14 @@ class Club {
     }
 
     public function init() {
-        $this->loadModules();
+        $this->getModules()->runModules();
     }
 
     public function loadModules() {
-        foreach (get_option("club_modules") as $key => $class) {
-            if (!array_key_exists($key, $this->modules)) {
-                write_log("Create class " . $class);
-                $this->modules[$key] = new $class;
-                $this->modules[$key]->setClub($this);
-                $this->modules[$key]->init();
-            }
+        if ($this->modules == null) {
+            $this->modules = \Club\Modules::fromJson(get_option("club_modules"));
         }
+        return $this->modules;
     }
 
     public function registerAdminAjax($handle, $function) {
@@ -77,15 +75,38 @@ class Club {
     /**
      * Run function starts the plugin
      */
-    public static function run() {
+    public static function run($base_path) {
         $club = Club::getInstance();
+        $club->setBasePath($base_path);
         add_action('admin_init', array(&$club, 'init'));
         add_action('admin_menu', array(&$club, 'createMenu'));
         add_action('admin_enqueue_scripts', array(&$club, 'add_scripts'));
     }
+    
+    public function setBasePath($basePath){
+        $this->base_path = $basePath;
+    }
+    
+    public function getBasePath() {
+        return $this->base_path;
+    }
 
     public function getCaps() {
         return get_option('club_caps');
+    }
+    
+    public function getModules() {
+        return $this->loadModules();
+    }
+    
+    public function setModules($modules) {
+        $this->modules = $modules;
+        return $this;
+    }
+
+    
+    public function saveModules() {
+        update_option("club_modules", json_encode($this->modules));
     }
 
     public static function install() {
@@ -112,9 +133,11 @@ class Club {
                 $club_member->add_cap($cap);
             }
         }
-        add_option("club_modules", array(
-            "role" => '\Club\Admin\Roles'
-        ));
+        $modules = \Club\Modules::getInstance();
+        $modules->loadDescriptors();
+        $modules->activateModule("role");
+        $modules->activateModule("modules");
+        add_option("club_modules", json_encode($modules));
     }
 
     public static function uninstall() {

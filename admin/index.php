@@ -6,3 +6,4 @@
  * and open the template in the editor.
  */
 
+echo var_dump(Club\Club::getInstance()->getModules());

@@ -70,4 +70,8 @@ class Roles extends Module {
         wp_die();
     }
 
+    public function addMenu() {
+       $this->_club->add_menu("Club Roles", 'club_admin', 'club/admin/roles.php');
+    }
+
 }

@@ -1,0 +1,6 @@
+{
+    "name": "role",
+    "class": "\\Club\\Admin\\Roles",
+    "caps": "calendar_show",
+    "description": "Rollen Verwaltung"
+}

@@ -44,4 +44,4 @@ if ( ! function_exists('write_log')) {
 register_activation_hook(__FILE__, array('Club\Club', 'install'));
 register_deactivation_hook(__FILE__, array('Club\Club', 'uninstall'));
 
-Club\Club::run();
+Club\Club::run(dirname(__FILE__));
