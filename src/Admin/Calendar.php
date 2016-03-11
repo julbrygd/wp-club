@@ -29,9 +29,8 @@ class Calendar extends Module {
     
     public function urlHandler() {
         if (is_admin()) return;
-        echo "bla";
         $cal = \Club\Calendar\CalendarServer::getInstance();
-        $uri = $_SERVER["REQUEST_SCHEME"].'://'.$_SERVER['HTTP_HOST'].'/'.$_SERVER['REQUEST_URI'];
+        $uri = $_SERVER["REQUEST_SCHEME"].'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
         if($uri == $cal->base_uri) {
             $cal->start();
             wp_die();

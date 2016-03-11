@@ -12,7 +12,7 @@ namespace Club\Sabre\Wordpress;
  * @author stephan
  */
 
-use Sabre\DAV\Auth\Backend\AbstractBasic;
+use \Sabre\DAV\Auth\Backend\AbstractBasic;
 
 class WordpressUserBackend extends AbstractBasic {
 	/**
