@@ -61,6 +61,10 @@ class Club {
         add_action('send_headers', array(&$club, 'set_header'));
         $this->getModules()->runModules();
     }
+    
+    public function public_init() {
+        $this->getModules()->runPublicModules();
+    }
 
     public function loadModules() {
         if ($this->modules == null) {
@@ -94,6 +98,7 @@ class Club {
         add_action('admin_init', array(&$club, 'init'));
         add_action('admin_menu', array(&$club, 'createMenu'));
         add_action('admin_enqueue_scripts', array(&$club, 'add_scripts'));
+        add_action("init", array(&$club, 'public_init'));
     }
 
     public function setBasePath($basePath) {

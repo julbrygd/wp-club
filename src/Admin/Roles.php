@@ -74,4 +74,8 @@ class Roles extends Module {
        $this->_club->add_menu("Club Roles", 'club_admin', 'club/admin/roles.php');
     }
 
+    public function public_init() {
+        
+    }
+
 }

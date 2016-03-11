@@ -36,4 +36,8 @@ class ModuleManagement extends \Club\Admin\Module {
         wp_die();
     }
 
+    public function public_init() {
+        
+    }
+
 }

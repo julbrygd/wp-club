@@ -11,6 +11,8 @@ class Calendar extends Module {
     public function init() {
         $this->install();
     }
+    
+    
 
     public function setClub($club) {
         $this->_club = $club;
@@ -22,43 +24,25 @@ class Calendar extends Module {
     }
 
     public function install() {
-        global $wpdb;
-
-        $table_name = $wpdb->prefix . "club_calendar_categories";
-        $table_name_categories = $table_name;
-        if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
-            $charset_collate = $wpdb->get_charset_collate();
-
-            $sql = "CREATE TABLE $table_name (
-		id mediumint(9) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		name varchar(255) NOT NULL
-	) $charset_collate;";
-
-            //reference to upgrade.php file
-            require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-            dbDelta($sql);
-        }
         
-        $table_name = $wpdb->prefix . "club_calendar_dates";
-        if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
-            $charset_collate = $wpdb->get_charset_collate();
-
-            $sql = "CREATE TABLE $table_name (
-		id mediumint(9) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		start datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-                end datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-		title varchar(255) NOT NULL,
-		description text NOT NULL,
-		url varchar(255) DEFAULT '' NOT NULL,
-                lat double DEFAULT 0.0 NOT NULL,
-                lng double DEFAULT 0.0 NOT NULL,
-                category int
-	) $charset_collate;";
-
-            //reference to upgrade.php file
-            require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-            dbDelta($sql);
+    }
+    
+    public function urlHandler() {
+        if (is_admin()) return;
+        echo "bla";
+        $cal = \Club\Calendar\CalendarServer::getInstance();
+        $uri = $_SERVER["REQUEST_SCHEME"].'://'.$_SERVER['HTTP_HOST'].'/'.$_SERVER['REQUEST_URI'];
+        if($uri == $cal->base_uri) {
+            $cal->start();
+            wp_die();
         }
+    }
+
+    public function public_init() {
+        global $wp_rewrite;
+        add_rewrite_rule('/club/caldav*', 'index.php');
+        $wp_rewrite->flush_rules(true); 
+        $this->urlHandler();
     }
 
 }

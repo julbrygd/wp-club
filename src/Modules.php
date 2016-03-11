@@ -82,6 +82,12 @@ class Modules implements \JsonSerializable {
         }
     }
     
+    public function runPublicModules() {
+        foreach($this->activated as $name){
+            $this->modules[$name]->getInstance()->public_init();
+        }
+    }
+    
     public function registerMenus() {
         foreach($this->activated as $name){
             $this->modules[$name]->getInstance()->addMenu();
