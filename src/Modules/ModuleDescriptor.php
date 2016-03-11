@@ -9,6 +9,7 @@ class ModuleDescriptor implements \JsonSerializable{
     private $caps;
     private $description;
     private $instance;
+    private $version;
     
     public function __construct($name, $class, $caps, $description) {
         $this->name = $name;
