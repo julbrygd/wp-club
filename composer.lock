@@ -4,8 +4,13 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
+<<<<<<< Updated upstream
     "hash": "02b643c266ea975e3071306da502435c",
     "content-hash": "e4c923d1a1de06ce80c7ef25aa142a96",
+=======
+    "hash": "8bd43041d6fd6e710840112ad93bea43",
+    "content-hash": "d82e34d13adf8b11128044f6c9ce2632",
+>>>>>>> Stashed changes
     "packages": [
         {
             "name": "composer/composer",
@@ -204,6 +209,45 @@
                 "validator"
             ],
             "time": "2015-10-05 11:27:42"
+        },
+        {
+            "name": "dannyvankooten/plugin-endpoints",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dannyvankooten/plugin-endpoints.git",
+                "reference": "d53a24b76d47ca2e62e0355932345673fa860cff"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dannyvankooten/plugin-endpoints/zipball/d53a24b76d47ca2e62e0355932345673fa860cff",
+                "reference": "d53a24b76d47ca2e62e0355932345673fa860cff",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.5.*"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Danny van Kooten",
+                    "email": "dannyvankooten@gmail.com"
+                }
+            ],
+            "description": "Allows you to create plugin endpoints, enabling only the minimum number of required plugins.",
+            "time": "2016-01-11 09:08:01"
         },
         {
             "name": "justinrainbow/json-schema",
@@ -1082,7 +1126,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "composer/composer": 20
+        "composer/composer": 20,
+        "dannyvankooten/plugin-endpoints": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

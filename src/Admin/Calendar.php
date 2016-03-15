@@ -11,8 +11,6 @@ class Calendar extends Module {
     public function init() {
         $this->install();
     }
-    
-    
 
     public function setClub($club) {
         $this->_club = $club;
@@ -26,21 +24,30 @@ class Calendar extends Module {
     public function install() {
         
     }
-    
+
     public function urlHandler() {
+<<<<<<< Updated upstream
         if (is_admin()) return;
         $cal = \Club\Calendar\CalendarServer::getInstance();
         $uri = $_SERVER["REQUEST_SCHEME"].'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
         if($uri == $cal->base_uri) {
+=======
+        if (is_admin())
+            return;
+        $cal = \Club\Calendar\CalendarServer::getInstance();
+        $uri = $_SERVER["REQUEST_SCHEME"] . '://' . $_SERVER['HTTP_HOST'] . '/' . $_SERVER['REQUEST_URI'];
+        if ($uri == $cal->base_uri) {
+>>>>>>> Stashed changes
             $cal->start();
             wp_die();
         }
     }
 
     public function public_init() {
-        global $wp_rewrite;
-        add_rewrite_rule('/club/caldav*', 'index.php');
-        $wp_rewrite->flush_rules(true); 
+        $router = new \PluginEndpoints\Router();
+
+// register an endpoint
+        //$router->register_endpoint('/club/caldav', array('club/club.php'));
         $this->urlHandler();
     }
 
