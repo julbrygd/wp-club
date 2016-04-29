@@ -42,6 +42,8 @@ class Club {
     public function add_scripts() {
         wp_register_style('bootstrap-admin', $this->plugin_url . "/css/bootstrap-admin.css");
         wp_register_script("bootstrap-adminjs", $this->plugin_url . "/js/bootstrap.min.js", array('jquery'));
+        wp_register_style("jquery.datetimepicker.min", $this->plugin_url . "/css/jquery.datetimepicker.min.css");
+        wp_register_script("bootstrap-adminjs", $this->plugin_url . "/js/jquery.datetimepicker.full.min.js", array('jquery'));
         wp_enqueue_script('ajax-script', $this->plugin_url . "/js/wp-ajax.js", array('jquery'));
         wp_localize_script('ajax-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
         
@@ -173,6 +175,15 @@ class Club {
         }
         delete_option('club_caps');
         delete_option("club_modules");
+    }
+    
+    public function __get($name) {
+        switch ($name) {
+            case "plugin_url":
+                return $this->plugin_url;
+                
+        }
+        return NULL;
     }
 
 }

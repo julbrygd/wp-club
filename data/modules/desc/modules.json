@@ -2,5 +2,6 @@
     "name": "modules",
     "class": "\\Club\\Modules\\ModuleManagement",
     "caps": "club_admin",
-    "description": "Modul Verwaltung"
+    "description": "Modul Verwaltung",
+    "version": "1.0"
 }

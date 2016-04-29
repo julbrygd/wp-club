@@ -15,29 +15,24 @@
                 </div>
             </div>
             <div class="form-group">
-                <label for="txtFrom" class="col-sm-2 control-label">Von Datum</label>
+                <label for="txtFrom" class="col-sm-2 control-label">Datum</label>
                 <div class="col-sm-10">
-                    <div id="txtFrom" />
+                    <div class="row">
+                        <div class="col-sm-6"><label for="dateFrom">Von</label></div>
+                        <div class="col-sm-6"><label for="dateTo">Bis</label></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div id="dateFrom"></div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div id="dateTo"></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-            <div class="form-group">
-                <label for="txtFromTime" class="col-sm-2 control-label">Von Zeit</label>
-                <div class="col-sm-10">
-                    <input type="time" id="txtFromTime" class="form-control" />
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="txtTo" class="col-sm-2 control-label">Bis</label>
-                <div class="col-sm-10">
-                    <div id="txtTo" />
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="txtToTime" class="col-sm-2 control-label">Bis Zeit</label>
-                <div class="col-sm-10">
-                    <input type="time" id="txtToTime" class="form-control" />
-                </div>
-            </div>
+
             <div class="form-group">
                 <label for="txtPlace" class="col-sm-2 control-label">Ort</label>
                 <div class="col-sm-10">
@@ -46,6 +41,8 @@
             </div>
             <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
+                    
+            <br />  
                     <button type="button" id="btnSave" class="btn btn-default">Speichern</button>
                 </div>
             </div>
@@ -60,25 +57,43 @@
 <link href="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.7.3/summernote.css" rel="stylesheet">
 <script src="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.7.3/summernote.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/i18n/jquery-ui-i18n.min.js"></script>
-<!--
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/locale/de.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker-standalone.min.css" rel="stylesheet">
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker-standalone.min.css"></script>
--->
+<script src="<?php echo Club\Club::getInstance()->plugin_url ?>/js/jquery.datetimepicker.full.min.js"></script>
+<link href="<?php echo Club\Club::getInstance()->plugin_url ?>/css/jquery.datetimepicker.min.css" rel="stylesheet" />
 <script type="text/javascript">
     var $ = jQuery.noConflict();
     $(document).ready(function () {
         $('#txtDescription').summernote();
-        $("#txtFrom").datepicker($.datepicker.regional[ "de"]);
-        $( "#txtFrom" ).datepicker( "option", "dateFormat", 'yy-mm-dd');
-        $("#txtTo").datepicker($.datepicker.regional[ "de"]);
-        $( "#txtTo" ).datepicker( "option", "dateFormat", 'yy-mm-dd');
-        $('#btnSave').on('click', function(){
+        $('#btnSave').on('click', function () {
             var data = {
-                from: $("#txtFrom").val()
+                title: $("#txtTitle").val(),
+                desc: $("txtDescription").val(),
+                from: $('#dateFrom').val(),
+                to: $('#dateTo').val()
             };
             alert(JSON.stringify(data));
+        });
+        $('#dateFrom').datetimepicker({
+            format: 'd.m.Y H:i',
+            inline: true,
+            lang: 'de',
+            onSelectDate: function (ct) {
+                $('#dateTo').datetimepicker('setOptions',{
+                    minDate: $('#dateFrom').val() ? $('#dateFrom').val() : false
+                });
+                
+            }
+        });
+        $('#dateTo').datetimepicker({
+            format: 'd.m.Y H:i',
+            inline: true,
+            lang: 'de',
+            minDate: $('#dateFrom').val(),
+            onSelectDate: function (ct) {
+                $('#dateFrom').datetimepicker('setOptions',{
+                    maxDate: $('#dateTo').val() ? $('#dateTo').val() : false
+                });
+                
+            }
         });
     });
 

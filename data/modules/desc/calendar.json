@@ -2,5 +2,6 @@
     "name": "calendar",
     "class": "\\Club\\Admin\\Calendar",
     "caps": "calendar_show",
-    "description": "Calendar Module"
+    "description": "Calendar Module",
+    "version": "1.0"
 }

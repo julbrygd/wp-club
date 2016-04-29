@@ -31,7 +31,7 @@ class Modules implements \JsonSerializable {
             if (substr($file, -4) == "json") {
                 $array = json_decode(file_get_contents($path . $file), true);
                 $desc = new \Club\Modules\ModuleDescriptor(
-                        $array["name"], $array["class"], $array["caps"], $array["description"]
+                        $array["name"], $array["class"], $array["caps"], $array["description"], $array["version"]
                 );
                 $this->addModule($desc);
             }
@@ -49,8 +49,11 @@ class Modules implements \JsonSerializable {
         $obj->setActivated($data["activated"]);
         $modules = array();
         foreach ($data["modules"] as $mod) {
+            if(!in_array("version", $mod)){
+                $mod["version"] = "1.0";
+            }
             $modules[$mod["name"]] = new Modules\ModuleDescriptor(
-                    $mod["name"], $mod["class"], $mod["caps"], $mod["description"]
+                    $mod["name"], $mod["class"], $mod["caps"], $mod["description"], $mod["version"]
             );
         }
         $obj->setModules($modules);
