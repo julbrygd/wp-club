@@ -21,16 +21,19 @@ $activ = $club->getModules()->getActivated();
                         <td><?php echo $mod->getName(); ?></td>
                         <td><?php echo $mod->getDescription(); ?></td>
                         <td>
+                            <?php if (!$club->getModules()->isProtected($mod->getName())) { ?>
                             <?php if (in_array($mod->getName(), $activ)) { ?>
                                 <button data-name="<?php echo $mod->getName(); ?>" class="btn btn-default deactivate">Deaktivieren</button>
                             <?php } else { ?>
                                 <button data-name="<?php echo $mod->getName(); ?>" class="btn btn-default activate">Aktivieren</button>
+                            <?php } ?>
                             <?php } ?>
                         </td>
                     </tr>
                 <?php } ?>
             </tbody>
         </table>
+        <button class="btn btn-default" id="btnReload">Neu Laden</button>
     </div>
 </div>
 
@@ -58,6 +61,12 @@ $activ = $club->getModules()->getActivated();
         $j(".deactivate").on("click", function (event) {
             event.preventDefault();
             toggleModule($j(this).data("name"), 'disable');
+        });
+        
+        $j("#btnReload").on("click", function () {
+            club_ajax_post("relaod_modules", {}, function (resp) {
+                location.reload();
+            });
         });
     });
 </script>

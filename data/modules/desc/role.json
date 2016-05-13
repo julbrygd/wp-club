@@ -3,5 +3,6 @@
     "class": "\\Club\\Admin\\Roles",
     "caps": "calendar_show",
     "description": "Rollen Verwaltung",
-    "version": "1.0"
+    "version": "1.0",
+    "settings": []
 }

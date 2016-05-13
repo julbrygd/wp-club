@@ -1,0 +1,8 @@
+{
+    "name": "settings",
+    "class": "\\Club\\Admin\\Settings",
+    "caps": "club_admin",
+    "description": "Einstellungen",
+    "version": "1.0",
+    "settings": []
+}

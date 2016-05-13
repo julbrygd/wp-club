@@ -15,5 +15,7 @@ abstract class Module {
     public function install() {
         
     }
+    
+    public function add_scripts(){}
 
 }

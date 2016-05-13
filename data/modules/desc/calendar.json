@@ -3,5 +3,15 @@
     "class": "\\Club\\Admin\\Calendar",
     "caps": "calendar_show",
     "description": "Calendar Module",
-    "version": "1.0"
+    "version": "1.0",
+    "settings": [{
+            "key": "google_maps_api_key",
+            "displayName": "Google Maps API key",
+            "type": "text"
+    }, {
+            "key": "calender_time_format",
+            "displayName": "Datum/Zeit Format",
+            "type": "text",
+            "default": "d.m.Y H:i"
+    }]
 }

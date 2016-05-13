@@ -46,24 +46,29 @@ class Club {
         wp_register_script("bootstrap-adminjs", $this->plugin_url . "/js/jquery.datetimepicker.full.min.js", array('jquery'));
         wp_enqueue_script('ajax-script', $this->plugin_url . "/js/wp-ajax.js", array('jquery'));
         wp_localize_script('ajax-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
-        
+
         wp_register_style('jquery-ui-theme', $this->plugin_url . "/css/jquery-ui.min.css");
         wp_enqueue_script('ajax-script');
         wp_enqueue_style('bootstrap-admin');
         wp_enqueue_style('jquery-ui-theme');
         wp_enqueue_script('bootstrap-adminjs');
         wp_enqueue_script('jquery-ui-datepicker');
+        
+        $this->getModules()->addModuleScripts();
     }
 
     public function set_header() {
-        header( 'Access-Control-Allow-Origin: *' );
+        header('Access-Control-Allow-Origin: *');
     }
 
     public function init() {
         add_action('send_headers', array(&$club, 'set_header'));
         $this->getModules()->runModules();
+        foreach ($this->getModules()->getSettings() as $setting) {
+            register_setting('club-settings', $setting["key"]);
+        }
     }
-    
+
     public function public_init() {
         $this->getModules()->runPublicModules();
     }
@@ -176,12 +181,11 @@ class Club {
         delete_option('club_caps');
         delete_option("club_modules");
     }
-    
+
     public function __get($name) {
         switch ($name) {
             case "plugin_url":
                 return $this->plugin_url;
-                
         }
         return NULL;
     }

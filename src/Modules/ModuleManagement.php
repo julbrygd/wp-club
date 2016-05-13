@@ -11,6 +11,7 @@ class ModuleManagement extends \Club\Admin\Module {
 
     public function init() {   
         $this->club->registerAdminAjax('toggle_module', array(&$this, 'toggle'));
+        $this->club->registerAdminAjax('relaod_modules', array(&$this, 'relaodFiles'));
     }
 
     public function setClub($club) {
@@ -33,6 +34,12 @@ class ModuleManagement extends \Club\Admin\Module {
             $this->club->saveModules();
             echo "ok";
         }
+        wp_die();
+    }
+    
+    public function relaodFiles() {
+        $this->club->getModules()->loadDescriptors();
+        $this->club->saveModules();
         wp_die();
     }
 
