@@ -23,7 +23,27 @@ $modules = \Club\Club::getInstance()->getModules();
         ?>
         <tr valign="top">
         <th scope="row"><?php echo $setting["displayName"] ?></th>
+        <?php        switch ($setting["type"]) {
+            case "text": ?>
         <td><input type="text" name="<?php echo $setting["key"] ?>" size="50" value="<?php echo esc_attr(get_option($setting["key"], $default) ); ?>" /></td>
+        <?php break;
+            case "select": ?>
+        <td>
+            <select name="<?php echo $setting["key"] ?>">
+                <option value="-1">Bitte auswählen</option>
+                <?php $current = get_option($setting["key"], $default);
+                foreach($setting["elements"] as $key=>$text) { 
+                    $selected="";
+                    if($current == $key) {
+                        $selected = " selected=\"selected\"";
+                    }
+                    ?>
+                <option value="<?php echo esc_attr($key) ?>"<?php echo $selected ?>><?php echo esc_attr($text) ?></option>
+                <?php } ?>
+            </select>
+        </td>
+        <?php break; 
+        }?>
         </tr>
         <?php } ?>
     </table>

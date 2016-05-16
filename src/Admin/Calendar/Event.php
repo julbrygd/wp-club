@@ -129,8 +129,52 @@ class Event implements \JsonSerializable {
     public function fromPost($post, $dateFormat) {
         $this->title = $post["title"];
         $this->descripion = $post["desc"];
-        $this->from = \DateTime::createFromFormat($dateFormat, $post["from"]);
-        $this->to = \DateTime::createFromFormat($dateFormat, $post["to"]);
+        if ($post["from"] != null || $post["from"] != "") {
+            $this->from = \DateTime::createFromFormat($dateFormat, $post["from"], new \DateTimeZone("Etc/UTC"));
+        } else {
+            $this->from = null;
+        }
+        if ($post["to"] != null || $post["to"] != "") {
+            $this->to = \DateTime::createFromFormat($dateFormat, $post["to"], new \DateTimeZone("Etc/UTC"));
+        } else {
+            $this->to = null;
+        }
+        
+    }
+
+    /**
+     * 
+     * @return \stdClass Result of the check
+     */
+    public function check() {
+        $ret = new \stdClass();
+        $ret->error = false;
+        $ret->messages = array();
+        if ($this->title == null || $this->title == "") {
+            $ret->error = true;
+            $ret->message["title"] = "Der Titel darf nicht leer seint";
+        }
+        if ($this->descripion == null || $this->descripion == "") {
+            $ret->error = true;
+            $ret->message["descripion"] = "Die Beschreibung darf nicht leer seint";
+        }
+        if ($this->from == null) {
+            $ret->error = true;
+            $ret->message["from"] = "Die \"Von\" Zeit darf nicht leer seint";
+        }
+        if ($this->to == null) {
+            $ret->error = true;
+            $ret->message["to"] = "Die \"Bis\" Zeit darf nicht leer seint";
+        }
+        if ($this->from == false) {
+            $ret->error = true;
+            $ret->message["from"] = "Die \"Von\" Zeit konnte nicht in ein Datum umgewandelt werden";
+        }
+        if ($this->to == false) {
+            $ret->error = true;
+            $ret->message["to"] = "Die \"Bis\" Zeit konnte nicht in ein Datum umgewandelt werden";
+        }
+        return $ret;
     }
 
 }

@@ -9,6 +9,12 @@ class Calendar extends Module {
     private $API_KEY;
     private $_club;
     private $maps_api_loaded;
+    private static $FORMATS = array(
+        "de" => array(
+            "php" => "U",
+            "moment" => "DD.MM.YYYY HH:MM"
+        )
+    );
 
     public function init() {
         $this->API_KEY = get_option("google_maps_api_key");
@@ -47,10 +53,18 @@ class Calendar extends Module {
         parent::add_scripts();
         $site = get_current_screen();
         if ($this->endsWith($site->base, "calendarform")) {
+            wp_enqueue_script("mommentjs");
+            wp_register_script("jquery-ui-sliderAccess", $this->_club->plugin_url . "/js/jquery-ui-sliderAccess.js", array("jquery-ui-core", "jquery-effects-slide"));
+            wp_register_script("jquery-ui-timepicker-addon", $this->_club->plugin_url . "/js/jquery-ui-timepicker-addon.js", array("jquery-ui-core", "jquery-ui-datepicker", "jquery-ui-sliderAccess"));
+            wp_register_script("jquery-ui-timepicker-addon-i18n", $this->_club->plugin_url . "/js/i18n/jquery-ui-timepicker-addon-i18n.min.js", array("jquery-ui-timepicker-addon"));
+            wp_register_style("jquery-ui-timepicker-addon-css", $this->_club->plugin_url . "/css/jquery-ui-timepicker-addon.min.css");
+            wp_enqueue_script("jquery-ui-sliderAccess");
+            wp_enqueue_script("jquery-ui-timepicker-addon");
+            wp_enqueue_style("jquery-ui-timepicker-addon-css");
             $maps_api = get_option('google_maps_api_key', '');
             if ($maps_api != '') {
                 wp_enqueue_script(
-                        'google-maps', '//maps.googleapis.com/maps/api/js?key=' . $maps_api . '&callback=initMap&libraries=places', array(), '1.0', true
+                        'google-maps', '//maps.googleapis.com/maps/api/js?key=' . $maps_api . '&libraries=places', array(), '1.0', true
                 );
                 $this->maps_api_loaded = TRUE;
             }
@@ -61,9 +75,9 @@ class Calendar extends Module {
         return $this->maps_api_loaded;
     }
     
-    public function getDateFormat() {
+    public function getDateFormat($type = "php") {
         $module = \Club\Club::getInstance()->getModules()->getModule("calendar");
-        $default = "d.m.Y H:i";
+        $default = "de";
         if($module != NULL) {
             foreach ($module->getSettings() as $setting){
                 if($setting["key"] == "calender_time_format"){
@@ -71,8 +85,8 @@ class Calendar extends Module {
                 }
             }
         }
-            
-        return get_option("calender_time_format", $default);
+        $formatString = get_option("calender_time_format", $default);
+        return self::$FORMATS[$formatString][$type];
     }
     
     public function saveEvent() {
@@ -91,7 +105,6 @@ class Calendar extends Module {
             }
             $place->fromPost($_POST);
             $event->setPlace($place);
-            $savePlace = $_POST["savePlace"];
             echo json_encode($event);
         }
         wp_die();

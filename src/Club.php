@@ -46,6 +46,7 @@ class Club {
         wp_register_script("bootstrap-adminjs", $this->plugin_url . "/js/jquery.datetimepicker.full.min.js", array('jquery'));
         wp_enqueue_script('ajax-script', $this->plugin_url . "/js/wp-ajax.js", array('jquery'));
         wp_localize_script('ajax-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+        wp_register_script("mommentjs",  $this->plugin_url . "/js/moment-with-locales.min.js");
 
         wp_register_style('jquery-ui-theme', $this->plugin_url . "/css/jquery-ui.min.css");
         wp_enqueue_script('ajax-script');

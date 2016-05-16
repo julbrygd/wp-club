@@ -11,7 +11,10 @@
     }, {
             "key": "calender_time_format",
             "displayName": "Datum/Zeit Format",
-            "type": "text",
-            "default": "d.m.Y H:i"
+            "type": "select",
+            "elements": {
+                "de": "d.m.Y H:i (03.12.2016 21:25)"
+            },
+            "default": "de"
     }]
 }
