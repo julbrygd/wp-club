@@ -9,6 +9,7 @@
 namespace Club\Admin\Calendar;
 
 use Ramsey\Uuid\Uuid;
+use \Club\Admin\Calendar\Db;
 
 /**
  * Description of Place
@@ -41,11 +42,19 @@ class Place implements \JsonSerializable {
      */
     private $lat;
 
+    /**
+     *
+     * @var Boolean
+     */
+    private $new;
+
     public function __construct($uuid = null) {
         if ($uuid == NULL) {
             $this->uuid = Uuid::uuid4()->toString();
+            $this->new = true;
         } else {
             $this->uuid = $uuid;
+            $this->new = false;
         }
     }
 
@@ -93,11 +102,66 @@ class Place implements \JsonSerializable {
         $this->lat = $lat;
         return $this;
     }
+    
+    private static function fromStdClass($obj){
+        $ret = new self($obj->placeid);
+        $ret->setName($obj->name);
+        $ret->setLat($obj->lat);
+        $ret->setLng($obj->lng);
+        return $ret;
+    }
 
     public function fromPost($post) {
         $this->lng = $post["lng"];
         $this->lat = $post["lat"];
         $this->name = $post["place"];
+    }
+    
+    public function delete() {
+        global $wpdb;
+        return 1 == $wpdb->delete(Db::get_place_table(), array("placeid" => $this->uuid));
+    }
+
+    public function save($update = true) {
+        global $wpdb;
+        $tablename = Db::get_place_table();
+
+        if ($this->new) {
+            $wpdb->insert(
+                    $tablename, array(
+                "placeid" => $this->uuid,
+                "name" => $this->name,
+                "lng" => $this->lng,
+                "lat" => $this->lat,
+                    )
+            );
+            $this->new = false;
+        } else if ($update) {
+            $wpdb->update(
+                    $tablename, $tablename, array(
+                "name" => $this->name,
+                "lng" => $this->lng,
+                "lat" => $this->lat,
+                    ), array(
+                "placeid" => $this->uuid
+            ));
+        }
+    }
+    
+    public static function findById($id){
+        global $wpdb;
+        return self::fromStdClass($wpdb->get_row( 
+                "SELECT * FROM " . Db::get_place_table(). " WHERE `" . Db::get_place_table() ."`.`placeid` = '".$id."'" 
+                ));
+    }
+    
+    public static function getAll(){
+        global $wpdb;
+        $ret = array();
+        foreach ($wpdb->get_results( "SELECT * FROM `" . Db::get_place_table() ."`" ) as $obj){
+            $ret[] = self::fromStdClass($obj);
+        }
+        return $ret;
     }
 
 }

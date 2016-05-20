@@ -1,4 +1,5 @@
 <?php
+
 $defaultFormat = "";
 $momentFormat = "";
 $module = \Club\Club::getInstance()->getModules()->getModuleInstance("calendar");
@@ -55,7 +56,15 @@ if ($module != NULL) {
                 <div class="col-sm-10">
                     <div class="row">
                         <div class="col-sm-10">
-                            <input type="text" id="txtPlace" class="form-control can-have-error" data-divid="divOrt" />
+                            <span id="txtPlaceChoose">
+                                <select class="form-control can-have-error combobox" id="txtPlace"  data-divid="divOrt">
+                                    <option value="">Bitte Ort auswählen ...</option>
+                                    <?php foreach (\Club\Admin\Calendar\Place::getAll() as $place) { ?>
+                                        <option value="<?php echo $place->getUuid() ?>"><?php echo $place->getName() ?></option>
+                                    <?php } ?>
+                                </select>
+                            </span>
+                            <input type="text" class="form-control can-have-error" placeholder="Ort name" data-divid="divOrt" id="txtPlaceNew" />
                             <br />
                             <span id="divOrtHelp" class="help-block">Ort ausw&auml;hlen oder neuer Hinzuf&uuml;gen</span>
                         </div>
@@ -96,7 +105,7 @@ if ($module != NULL) {
             text: "Der Text darf nicht leer sein",
             helper: ["divTitleHelp"]
         },
-        "divDesc": {helper: ["divDescHelper"]},
+        "divDesc": {helper: ["divDescHelp"]},
         "divDate": {helper: ["divToHelp", "divFromHelp"]},
         "divOrt": {
             text: "Der Ort darf nicht leer sein",
@@ -104,6 +113,7 @@ if ($module != NULL) {
         }
     };
     var errorState = "has-error";
+    var newPlace = false;
 
     $(document).ready(function () {
         var now = moment();
@@ -113,10 +123,12 @@ if ($module != NULL) {
         var from = now.unix();
         now.add(8, 'h');
         var to = now.unix();
-        function checkForm(sel) {
+
+        $("#txtPlaceNew").hide();
+        function checkForm(sel, text) {
             var div = $(sel).data("divid");
             var value = $(sel).val();
-            var text = errorHelper[div]["text"];
+            var text = typeof text !== 'undefined' ? text : errorHelper[div]["text"];
             var helper = errorHelper[div]["helper"];
             if (value === undefined || value === "") {
                 if (!$("#" + div).hasClass(errorState)) {
@@ -131,37 +143,85 @@ if ($module != NULL) {
             }
         }
 
+        addDescCheck();
+
+        function addDescCheck() {
+            if (tinymce.activeEditor !== null) {
+                addDescCheckInternla();
+            } else {
+                window.setTimeout(addDescCheck, 1000);
+            }
+        }
+
+        function addDescCheckInternla() {
+            tinymce.activeEditor.onChange.remove(checkDesc);
+            tinymce.activeEditor.onChange.add(checkDesc);
+        }
+
+        function checkDesc() {
+            var val = tinymce.activeEditor.getContent();
+            if (val === undefined || val === "") {
+                $("#divDescHelp").html("Die Beschreibung darf nicht leer sein");
+                if (!$("#divDesc").hasClass(errorState)) {
+                    $("#divDesc").addClass(errorState);
+                }
+            } else {
+                $("#divDescHelp").html("");
+                if ($("#divDesc").hasClass(errorState)) {
+                    $("#divDesc").removeClass(errorState);
+                }
+            }
+        }
+
         $("input.can-have-error").on("blur", function () {
             checkForm(this);
         });
+
         $('#btnSave').on('click', function () {
             var mfrom = moment($('#dateFrom_picker').datetimepicker('getDate'));
             var data = {
                 title: $("#txtTitle").val(),
-                desc: $("#txtDescription").val(),
+                desc: tinymce.activeEditor.getContent(),
                 from: mfrom.unix(),
                 to: moment($('#dateTo_picker').datetimepicker('getDate')).unix(),
-                utcOffset: mfrom.utcOffset(),
-                place: $("#txtPlace").val()
+                utcOffset: mfrom.utcOffset()
             };
-            if (useMarker) {
+            var error = false;
+            if (newPlace) {
+                data.place = $("#txtPlaceNew").val();
+                data.newPlace = true;
                 if (markers.length >= 1) {
                     data["lng"] = markers[0].position.lng();
                     data["lat"] = markers[0].position.lat();
+                } else {
+                    checkForm("#txtPlace", "Bitte Ort auf der Karte auswählen");
+                    error = true;
+                }
+            } else {
+                data.place = $("#txtPlace").val();
+                data.newPlace = false;
+                if (data.place === undefined || data.place === "") {
+                    checkForm("#txtPlace");
+                    error = true;
                 }
             }
-            var error = false;
             if (data.title === undefined || data.title === "") {
                 checkForm("#txtTitle");
                 error = true;
             }
-            if (data.place === undefined || data.place === "") {
-                checkForm("#txtPlace");
+
+            if (data.desc === undefined || data.desc === "") {
+                $("#divDescHelp").html("Die Beschreibung darf nicht leer sein");
+                if (!$("#divDesc").hasClass(errorState)) {
+                    $("#divDesc").addClass(errorState);
+                }
                 error = true;
             }
-            if (data.desc === undefined || data.desc === "") {
-                checkForm("#txtTitle");
-                error = true;
+            if (data.to < data.from) {
+                $("#divToHelp").html('Das "Bis"-Datum darf nicht kleiner sein als das "Von"-Datum');
+                if (!$("#divDate").hasClass(errorState)) {
+                    $("#divDate").addClass(errorState);
+                }
             }
             if (!error) {
                 club_ajax_post("calendar_save_event", data, function (resp) {
@@ -255,12 +315,25 @@ if ($module != NULL) {
         toDiv.datetimepicker('setDate', moment.unix(to).toDate());
 
         toDiv.datetimepicker('option', 'minDate', fromDiv.datetimepicker('getDate'));
+        $('.combobox').combobox({bsVersion: '3'});
 
         $("#divMap").hide();
 
         $("#btnNewPlace").on("click", function () {
-            initMap();
-            $("#divMap").show();
+            if (newPlace) {
+                $("#txtPlaceNew").hide();
+                $('#txtPlaceChoose').show();
+                $("#divMap").hide();
+                $("#btnNewPlace").html("Neuer Ort");
+                newPlace = false;
+            } else {
+                initMap();
+                $("#txtPlaceNew").show();
+                $('#txtPlaceChoose').hide();
+                $("#divMap").show();
+                $("#btnNewPlace").html("Ort auswählen");
+                newPlace = true;
+            }
         });
 
     });
@@ -302,6 +375,7 @@ if ($module != NULL) {
                 animation: google.maps.Animation.DROP
             }));
             useMarker = true;
+
         });
 
         // Create the search box and link it to the UI element.
@@ -341,7 +415,6 @@ if ($module != NULL) {
                     animation: google.maps.Animation.DROP,
                     position: place.geometry.location
                 }));
-                $("#txtPlace").val(place.name);
 
                 if (place.geometry.viewport) {
                     // Only geocodes have viewport.
@@ -349,6 +422,7 @@ if ($module != NULL) {
                 } else {
                     bounds.extend(place.geometry.location);
                 }
+                $("#txtPlaceNew").val(place.name);
                 useMarker = true;
             });
             map.fitBounds(bounds);

@@ -21,6 +21,7 @@ class Calendar extends Module {
         $this->install();
         $this->maps_api_loaded = false;
         $this->_club->registerAdminAjax('calendar_save_event', array(&$this, 'saveEvent'));
+        $this->_club->registerAdminAjax('calendar_delete_place', array(&$this, 'deletePlace'));
     }
 
     public function setClub($club) {
@@ -30,10 +31,11 @@ class Calendar extends Module {
     public function addMenu() {
         $this->_club->add_menu("Termine", "club_admin", "club/admin/calendar.php");
         $this->_club->add_menu("Termine Form", "club_admin", "club/admin/calendarform.php", true);
+        $this->_club->add_menu("Termine Orte", "club_admin", "club/admin/calendarplaces.php", true);
     }
 
     public function install() {
-        
+        \Club\Admin\Calendar\Db::execute();
     }
 
     public function urlHandler() {
@@ -58,9 +60,14 @@ class Calendar extends Module {
             wp_register_script("jquery-ui-timepicker-addon", $this->_club->plugin_url . "/js/jquery-ui-timepicker-addon.js", array("jquery-ui-core", "jquery-ui-datepicker", "jquery-ui-sliderAccess"));
             wp_register_script("jquery-ui-timepicker-addon-i18n", $this->_club->plugin_url . "/js/i18n/jquery-ui-timepicker-addon-i18n.min.js", array("jquery-ui-timepicker-addon"));
             wp_register_style("jquery-ui-timepicker-addon-css", $this->_club->plugin_url . "/css/jquery-ui-timepicker-addon.min.css");
+            wp_register_script("bootstrap-combobox.js", $this->_club->plugin_url . "/js/bootstrap-combobox.js", array("bootstrap-adminjs"));
+            wp_register_style("bootstrap-combobox.css", $this->_club->plugin_url . "/css/bootstrap-combobox.css");
+
             wp_enqueue_script("jquery-ui-sliderAccess");
             wp_enqueue_script("jquery-ui-timepicker-addon");
             wp_enqueue_style("jquery-ui-timepicker-addon-css");
+            wp_enqueue_script("bootstrap-combobox.js");
+            wp_enqueue_style("bootstrap-combobox.css");
             $maps_api = get_option('google_maps_api_key', '');
             if ($maps_api != '') {
                 wp_enqueue_script(
@@ -70,17 +77,17 @@ class Calendar extends Module {
             }
         }
     }
-    
-    public function isMapsLoaded(){
+
+    public function isMapsLoaded() {
         return $this->maps_api_loaded;
     }
-    
+
     public function getDateFormat($type = "php") {
         $module = \Club\Club::getInstance()->getModules()->getModule("calendar");
         $default = "de";
-        if($module != NULL) {
-            foreach ($module->getSettings() as $setting){
-                if($setting["key"] == "calender_time_format"){
+        if ($module != NULL) {
+            foreach ($module->getSettings() as $setting) {
+                if ($setting["key"] == "calender_time_format") {
                     $default = $setting["default"];
                 }
             }
@@ -88,24 +95,41 @@ class Calendar extends Module {
         $formatString = get_option("calender_time_format", $default);
         return self::$FORMATS[$formatString][$type];
     }
-    
+
     public function saveEvent() {
         if (array_key_exists("action", $_POST) && $_POST['action'] == 'club_calendar_save_event') {
             $id = null;
-            if(array_key_exists("uuid", $_POST)){
+            if (array_key_exists("uuid", $_POST)) {
                 $id = $_POST["$id"];
             }
             $event = new \Club\Admin\Calendar\Event($id);
             $event->fromPost($_POST, $this->getDateFormat());
             $place = null;
-            if(array_key_exists("placeUuid", $_POST)){
-                $place = new \Club\Admin\Calendar\Place($_POST["placeUuid"]);
+            $newPlace = array_key_exists("newPlace", $_POST) ? filter_var(strtolower($_POST["newPlace"]), FILTER_VALIDATE_BOOLEAN) : false;
+            if (!$newPlace) {
+                $id = $_POST["place"];
+                $place = \Club\Admin\Calendar\Place::findById($id);
             } else {
-                 $place = new \Club\Admin\Calendar\Place();
+                $place = new \Club\Admin\Calendar\Place();
+                $place->setName($_POST["place"]);
+                $place->setLat($_POST["lat"]);
+                $place->setLng($_POST["lng"]);
+                $place->save(false);
             }
-            $place->fromPost($_POST);
             $event->setPlace($place);
+            $event->save(false);
             echo json_encode($event);
+        }
+        wp_die();
+    }
+    
+    public function deletePlace() {
+        if (array_key_exists("action", $_POST) && $_POST['action'] == 'club_calendar_delete_place') {
+            $nonce = array_key_exists("nonce", $_POST) ? $_POST["nonce"]: null;
+            $uuid = array_key_exists("uuid", $_POST) ? $_POST["uuid"]: null;
+            if(wp_verify_nonce($nonce, "club-delete-place-".$uuid)){
+                echo Calendar\Place::findById($uuid)->delete();
+            }
         }
         wp_die();
     }
