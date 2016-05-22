@@ -9,7 +9,6 @@ class Modules implements \JsonSerializable {
      * @var type array
      */
     private $modules;
-    
     private $protected = array("modules", "settings", "role");
 
     /**
@@ -33,15 +32,18 @@ class Modules implements \JsonSerializable {
             if (substr($file, -4) == "json") {
                 $array = json_decode(file_get_contents($path . $file), true);
                 print_r($array);
+                if (!\array_key_exists("menu", $array)) {
+                    $array["menu"] = [];
+                }
                 $desc = new \Club\Modules\ModuleDescriptor(
-                        $array["name"], $array["class"], $array["caps"], $array["description"], $array["version"], $array["settings"]
+                        $array["name"], $array["class"], $array["caps"], $array["description"], $array["version"], $array["settings"], $array["menu"]
                 );
                 $this->addModule($desc, TRUE);
             }
         }
     }
-    
-    public function isProtected($name){
+
+    public function isProtected($name) {
         return in_array($name, $this->protected);
     }
 
@@ -56,14 +58,17 @@ class Modules implements \JsonSerializable {
         $obj->setActivated($data["activated"]);
         $modules = array();
         foreach ($data["modules"] as $mod) {
-            if(!array_key_exists("version", $mod)){
+            if (!array_key_exists("version", $mod)) {
                 $mod["version"] = "1.0";
             }
-            if(!array_key_exists("settings", $mod)){
+            if (!array_key_exists("settings", $mod)) {
                 $mod["settings"] = array();
             }
+            if (!array_key_exists("menu", $mod)) {
+                $mod["menu"] = array();
+            }
             $modules[$mod["name"]] = new Modules\ModuleDescriptor(
-                    $mod["name"], $mod["class"], $mod["caps"], $mod["description"], $mod["version"], $mod["settings"]
+                    $mod["name"], $mod["class"], $mod["caps"], $mod["description"], $mod["version"], $mod["settings"], $mod["menu"]
             );
         }
         $obj->setModules($modules);
@@ -76,67 +81,108 @@ class Modules implements \JsonSerializable {
     }
 
     public function addModule($descriptor, $all = FALSE) {
-        if($all){
+        if ($all) {
             $this->modules[$descriptor->getName()] = $descriptor;
         } else if (!array_key_exists($descriptor->getName(), $this->modules)) {
             $this->modules[$descriptor->getName()] = $descriptor;
         }
         return $this;
     }
-    
+
     public function getSettings() {
         $ret = array();
         foreach ($this->activated as $name) {
             $mod = $this->getModule($name);
             $settings = $mod->getSettings();
-            if(count($settings) >= 1) {
+            if (count($settings) >= 1) {
                 $ret = array_merge($settings, $ret);
             }
         }
         return $ret;
     }
 
+    /**
+     * 
+     * @param type $name
+     * @return \Club\Modules\ModuleDescriptor
+     */
     public function getModule($name) {
         if (array_key_exists($name, $this->modules)) {
             return $this->modules[$name];
         }
         return NULL;
     }
-    
+
+    /**
+     * 
+     * @param type $name
+     * @return \Club\Admin\Module
+     */
     public function getModuleInstance($name) {
         if (array_key_exists($name, $this->modules)) {
             return $this->modules[$name]->getInstance();
         }
         return NULL;
     }
-    
+
     public function runModules() {
-        foreach($this->activated as $name){
+        foreach ($this->activated as $name) {
             $this->modules[$name]->getInstance();
+            $this->modules[$name]->getInstance()->registerPages();
         }
     }
-    
+
     public function addModuleScripts() {
-        foreach($this->activated as $name){
+        foreach ($this->activated as $name) {
             $this->modules[$name]->getInstance()->add_scripts();
         }
     }
-    
+
     public function runPublicModules() {
-        foreach($this->activated as $name){
+        foreach ($this->activated as $name) {
             $this->modules[$name]->getInstance()->public_init();
         }
     }
-    
+
     public function registerMenus() {
-        foreach($this->activated as $name){
+        $club = \Club\Club::getInstance();
+        $baseDir = $club->plugin_base;
+        foreach ($this->activated as $name) {
             $this->modules[$name]->getInstance()->addMenu();
+            $menus = $this->getModule($name)->getMenu();
+            $this->registerJsonMenu($menus, $baseDir, $club, $name);
+        }
+    }
+
+    private function registerJsonMenu($menus, $baseDir, $club, $name, $parrent = null) {
+        foreach ($menus as $menu) {
+            $slug = $menu["slug"];
+            $title = $menu["title"];
+            $caps = $menu["caps"];
+            $show = $menu["show"];
+            $file = $baseDir . "/" . $menu["file"];
+            if (file_exists($file)) {
+                $club->add_menu_slug($name, $title, $caps, $slug, $file, !$show, $parrent);
+            }
         }
     }
 
     public function activateModule($name) {
         if (!in_array($name, $this->activated)) {
             $this->activated[] = $name;
+            $module = $this->getModule($name);
+            $caps = $module->getCaps();
+            $knownCaps = get_option('club_caps', array());
+            $club_admin = get_role('club_admin');
+            $admin = get_role('administrator');
+            foreach ($caps as $cap) {
+                if (!in_array($cap, $knownCaps)) {
+                    $admin->add_cap($cap);
+                    $club_admin->add_cap($cap);
+                    $knownCaps[] = $cap;
+                }
+            }
+            update_option('club_caps', $knownCaps);
         }
         return $this;
     }

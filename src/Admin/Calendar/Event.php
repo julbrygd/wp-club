@@ -217,13 +217,11 @@ class Event implements \JsonSerializable {
             $this->new = false;
         } else if ($update) {
             $wpdb->update(
-                    $tablename, $tablename, array(
+                    $tablename, array(
                 "title" => $this->title,
                 "desc" => $this->descripion,
                 "from" => $this->from->format('Y-m-d H:i:s'),
-                "from_offset" => $this->from->getOffset(),
                 "to" => $this->to->format('Y-m-d H:i:s'),
-                "to_offset" => $this->to->getOffset(),
                 "placeid" => $this->place->getUuid()
                     ), array(
                 "eventid" => $this->uuid
@@ -251,5 +249,16 @@ class Event implements \JsonSerializable {
         }
         return $ret;
     }
+    
+    public static function findById($id){
+        global $wpdb;
+        return self::fromStdClass($wpdb->get_row( 
+                "SELECT * FROM " . Db::get_event_table(). " WHERE `" . Db::get_event_table() ."`.`eventid` = '".$id."'" 
+                ));
+    }
 
+    public function delete() {
+        global $wpdb;
+        return 1 == $wpdb->delete(Db::get_event_table(), array("eventid" => $this->uuid));
+    }
 }

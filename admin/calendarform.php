@@ -1,5 +1,19 @@
 <?php
 
+use Ramsey\Uuid\Uuid;
+use Club\Admin\Calendar\Event;
+
+$uuid = filter_input(INPUT_GET, "uuid");
+$edit = false;
+$event = null;
+if (!Uuid::isValid($uuid)) {
+    $uuid = null;
+    $event = new Event();
+} else {
+    $event = Event::findById($uuid);
+    $edit = true;
+}
+
 $defaultFormat = "";
 $momentFormat = "";
 $module = \Club\Club::getInstance()->getModules()->getModuleInstance("calendar");
@@ -16,7 +30,7 @@ if ($module != NULL) {
             <div class="form-group" id="divTitle" class="can-have-error">
                 <label for="txtTitle" class="col-sm-2 control-label">Title</label>
                 <div class="col-sm-10">
-                    <input type="text" class="form-control can-have-error" id="txtTitle" placeholder="Titel" data-divid="divTitle" />
+                    <input type="text" class="form-control can-have-error" value="<?php echo $event->getTitle() ?>" id="txtTitle" placeholder="Titel" data-divid="divTitle" />
                     <span id="divTitleHelp" class="help-block"></span>
                 </div>
             </div>
@@ -24,7 +38,7 @@ if ($module != NULL) {
                 <label for="txtDescription" class="col-sm-2 control-label">Beschreibung</label>
                 <div class="col-sm-10">
                     <?php //<div id="txtDescription"></div> ?>
-                    <?php wp_editor("", "txtDescription", array("drag_drop_upload" => true)); ?>
+                    <?php wp_editor($event->getDescripion(), "txtDescription", array("drag_drop_upload" => true)); ?>
                     <br />
                     <span id="divDescHelp" class="help-block"></span>
                 </div>
@@ -59,8 +73,14 @@ if ($module != NULL) {
                             <span id="txtPlaceChoose">
                                 <select class="form-control can-have-error combobox" id="txtPlace"  data-divid="divOrt">
                                     <option value="">Bitte Ort auswählen ...</option>
-                                    <?php foreach (\Club\Admin\Calendar\Place::getAll() as $place) { ?>
-                                        <option value="<?php echo $place->getUuid() ?>"><?php echo $place->getName() ?></option>
+                                    <?php
+                                    foreach (\Club\Admin\Calendar\Place::getAll() as $place) {
+                                        $selected = "";
+                                        if ($event->getPlace() != null && $place->getUuid() == $event->getPlace()->getUuid()) {
+                                            $selected = ' selected="selected"';
+                                        }
+                                        ?>
+                                        <option<?php echo $selected ?> value="<?php echo $place->getUuid() ?>"><?php echo $place->getName() ?></option>
                                     <?php } ?>
                                 </select>
                             </span>
@@ -100,30 +120,34 @@ if ($module != NULL) {
     var momentFormat = "<?php echo $momentFormat ?>";
     var markers = [];
     var useMarker = false;
-    var errorHelper = {
-        "divTitle": {
-            text: "Der Text darf nicht leer sein",
-            helper: ["divTitleHelp"]
-        },
-        "divDesc": {helper: ["divDescHelp"]},
-        "divDate": {helper: ["divToHelp", "divFromHelp"]},
-        "divOrt": {
-            text: "Der Ort darf nicht leer sein",
-            helper: ["divOrtHelper"]
-        }
-    };
+    var edit = <?php if ($edit) { ?> true <?php } else { ?> false <?php } ?>;
+            var errorHelper = {
+                "divTitle": {
+                    text: "Der Text darf nicht leer sein",
+                    helper: ["divTitleHelp"]
+                },
+                "divDesc": {helper: ["divDescHelp"]},
+                "divDate": {helper: ["divToHelp", "divFromHelp"]},
+                "divOrt": {
+                    text: "Der Ort darf nicht leer sein",
+                    helper: ["divOrtHelper"]
+                }
+            };
     var errorState = "has-error";
     var newPlace = false;
-
     $(document).ready(function () {
-        var now = moment();
-        now.set('minute', 0);
-        now.set('second', 0);
-        now.set('millisecond', 0);
-        var from = now.unix();
-        now.add(8, 'h');
-        var to = now.unix();
-
+<?php if ($edit) { ?>
+            var from = <?php echo $event->getFrom()->getTimestamp() ?>;
+            var to = <?php echo $event->getTo()->getTimestamp() ?>;
+<?php } else { ?>
+            var now = moment();
+            now.set('minute', 0);
+            now.set('second', 0);
+            now.set('millisecond', 0);
+            var from = now.unix();
+            now.add(8, 'h');
+            var to = now.unix();
+<?php } ?>
         $("#txtPlaceNew").hide();
         function checkForm(sel, text) {
             var div = $(sel).data("divid");
@@ -144,7 +168,6 @@ if ($module != NULL) {
         }
 
         addDescCheck();
-
         function addDescCheck() {
             if (tinymce.activeEditor !== null) {
                 addDescCheckInternla();
@@ -176,7 +199,6 @@ if ($module != NULL) {
         $("input.can-have-error").on("blur", function () {
             checkForm(this);
         });
-
         $('#btnSave').on('click', function () {
             var mfrom = moment($('#dateFrom_picker').datetimepicker('getDate'));
             var data = {
@@ -186,6 +208,9 @@ if ($module != NULL) {
                 to: moment($('#dateTo_picker').datetimepicker('getDate')).unix(),
                 utcOffset: mfrom.utcOffset()
             };
+            if (edit) {
+                data.uuid = "<?php echo $event->getUuid() ?>";
+            }
             var error = false;
             if (newPlace) {
                 data.place = $("#txtPlaceNew").val();
@@ -226,6 +251,7 @@ if ($module != NULL) {
             if (!error) {
                 club_ajax_post("calendar_save_event", data, function (resp) {
                     alert(JSON.stringify(resp));
+                    location.href = "<?php echo wp_nonce_url(admin_url('admin.php?page=club_events')) ?>";
                 });
             }
         });
@@ -275,7 +301,6 @@ if ($module != NULL) {
                 toDiv.datetimepicker('option', 'minDate', fromDiv.datetimepicker('getDate'));
             }
         });
-
         toDiv.datetimepicker({
             altField: "#dateTo",
             altFieldTimeOnly: false,
@@ -310,15 +335,11 @@ if ($module != NULL) {
             showMonthAfterYear: false,
             yearSuffix: ''
         });
-
         fromDiv.datetimepicker('setDate', moment.unix(from).toDate());
         toDiv.datetimepicker('setDate', moment.unix(to).toDate());
-
         toDiv.datetimepicker('option', 'minDate', fromDiv.datetimepicker('getDate'));
         $('.combobox').combobox({bsVersion: '3'});
-
         $("#divMap").hide();
-
         $("#btnNewPlace").on("click", function () {
             if (newPlace) {
                 $("#txtPlaceNew").hide();
@@ -335,9 +356,7 @@ if ($module != NULL) {
                 newPlace = true;
             }
         });
-
     });
-
     function initMap() {
         var mapDiv = document.getElementById('map');
         var map = new google.maps.Map(mapDiv, {
@@ -375,24 +394,19 @@ if ($module != NULL) {
                 animation: google.maps.Animation.DROP
             }));
             useMarker = true;
-
         });
-
         // Create the search box and link it to the UI element.
         var input = document.getElementById('pac-input');
         var searchBox = new google.maps.places.SearchBox(input);
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-
         // Bias the SearchBox results towards current map's viewport.
         map.addListener('bounds_changed', function () {
             searchBox.setBounds(map.getBounds());
         });
-
         // Listen for the event fired when the user selects a prediction and retrieve
         // more details for that place.
         searchBox.addListener('places_changed', function () {
             var places = searchBox.getPlaces();
-
             if (places.length == 0) {
                 return;
             }
@@ -402,7 +416,6 @@ if ($module != NULL) {
                 marker.setMap(null);
             });
             markers = [];
-
             // For each place, get the icon, name and location.
             var bounds = new google.maps.LatLngBounds();
             places.forEach(function (place) {
@@ -415,7 +428,6 @@ if ($module != NULL) {
                     animation: google.maps.Animation.DROP,
                     position: place.geometry.location
                 }));
-
                 if (place.geometry.viewport) {
                     // Only geocodes have viewport.
                     bounds.union(place.geometry.viewport);
@@ -427,7 +439,6 @@ if ($module != NULL) {
             });
             map.fitBounds(bounds);
         });
-
     }
 
 </script>

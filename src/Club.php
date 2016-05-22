@@ -14,11 +14,20 @@ class Club {
     private $plugin_url;
     private $modules;
     private $base_path;
+    private $plugin_dir;
+    private $menus;
+    private $pages;
 
-    private function __construct() {
+    private function __construct($file) {
+        if($file == null){
+            $file = dirname(dirname(__FILE__) . '/../../');
+        }
+        $this->plugin_dir = $file;
         $this->parrent_page = "club/admin/index.php";
         $this->plugin_url = plugin_dir_url(__FILE__) . '/../../';
         $this->modules = array();
+        $this->menus = array();
+        $this->pages = array();
     }
 
     public function add_menu($title, $caps, $slug, $no_parrent = false) {
@@ -26,6 +35,22 @@ class Club {
             add_submenu_page(null, $title, $title, $caps, $slug);
         } else {
             add_submenu_page($this->parrent_page, $title, $title, $caps, $slug);
+        }
+    }
+    
+    public function add_menu_slug($module, $title, $caps, $slug, $file, $no_parrent = false, $parrent = null) {
+        $this->menus[$slug] = array(
+            "slug"=>$slug,
+            "module"=>$module,
+            "file"=>$file
+        );
+        if($parrent == null){
+            $parrent = $this->parrent_page;
+        }
+        if ($no_parrent) {
+            add_submenu_page(null, $title, $title, $caps, $slug, array(&$this, "renderPage"));
+        } else {
+            add_submenu_page($parrent, $title, $title, $caps, $slug, array(&$this, "renderPage"));
         }
     }
 
@@ -88,11 +113,11 @@ class Club {
     /**
      * Get the singleton instanche of the plugin class
      * 
-     * @return type Club\Club
+     * @return \Club\Club
      */
-    public static function getInstance() {
+    public static function getInstance($file = null) {
         if (Club::$INSTANCE == NULL) {
-            Club::$INSTANCE = new Club();
+            Club::$INSTANCE = new Club($file);
         }
         return Club::$INSTANCE;
     }
@@ -187,8 +212,35 @@ class Club {
         switch ($name) {
             case "plugin_url":
                 return $this->plugin_url;
+            case "plugin_base":    
+                return $this->plugin_dir;
         }
         return NULL;
+    }
+    
+    public function renderPage(){
+        $view = filter_input(INPUT_GET, "view");
+        $view = $view != null ? $view : "";
+        $slug = str_replace("admin_page_", "", str_replace("club_page_", "", get_current_screen()->base));
+        $hash = Modules\Page::calcHash($slug, $view);
+        if(array_key_exists($hash, $this->pages)){
+            $page = $this->pages[$hash];
+            $file = $page->getFile();
+            if(!file_exists($file) && $file[0] !== DIRECTORY_SEPARATOR){
+                $file = realpath($this->plugin_dir . "/" . $file);
+            }
+            include $file;
+        } else if(array_key_exists($slug, $this->menus)){
+            include $this->menus[$slug]["file"];
+        }
+    }
+
+    /**
+     * 
+     * @param \Club\Modules\Page $page
+     */
+    public function registerPage($page) {
+        $this->pages[$page->getMd5()] = $page;
     }
 
 }

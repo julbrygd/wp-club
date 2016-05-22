@@ -1,14 +1,14 @@
 {
     "name": "calendar",
     "class": "\\Club\\Admin\\Calendar",
-    "caps": "calendar_show",
+    "caps": ["calendar_mangager"],
     "description": "Calendar Module",
     "version": "1.0",
     "settings": [{
             "key": "google_maps_api_key",
             "displayName": "Google Maps API key",
             "type": "text"
-    }, {
+        }, {
             "key": "calender_time_format",
             "displayName": "Datum/Zeit Format",
             "type": "select",
@@ -16,5 +16,14 @@
                 "de": "d.m.Y H:i (03.12.2016 21:25)"
             },
             "default": "de"
-    }]
+        }],
+    "menu": {
+        "club_events": {
+            "slug": "club_events",
+            "title": "Termine",
+            "caps": "calendar_mangager",
+            "file": "admin/calendar.php",
+            "show": true
+        }
+    }
 }

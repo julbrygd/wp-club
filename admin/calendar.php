@@ -10,9 +10,6 @@ use Club\Admin\Calendar\Event;
 global $wpdb;
 //var_dump(get_categories());
 $events = Event::getAll();
-if (!session_id()) {
-    session_start();
-}
 ?>
 
 <div class="bootstrap-wrapper">
@@ -31,15 +28,15 @@ if (!session_id()) {
             <tbody>
                 <?php foreach ($events as $event) { ?>
                 <tr>
-                    <td><?php echo $event->getTitle() ?></td>
+                    <td class="<?php echo $event->getUuid()?>" name="name"><?php echo $event->getTitle() ?></td>
                     <td><?php echo $event->getFromFormated() ?></td>
                     <td><?php echo $event->getToFormated() ?></td>
                     <td>&nbsp;</td>
                     <td>
-                        <a class="btn btn-default btn-sm btnEdit" href="<?php print wp_nonce_url(admin_url('admin.php?page=club/admin/calendarform.php')); ?>" data-uuid="<?php $event->getUuid() ?>">
+                        <a class="btn btn-default btn-sm btnEdit" href="<?php print wp_nonce_url(admin_url('admin.php?page=club_events&view=form&uuid='.$event->getUuid())); ?>">
                             <span class="glyphicon glyphicon-pencil"></span>
                         </a>&nbsp;
-                        <button class="btn btn-default btn-sm btnDelete" data-uuid="<?php $event->getUuid() ?>">
+                        <button class="btn btn-default btn-sm btnDelete" data-uuid="<?php echo $event->getUuid() ?>">
                             <span class="glyphicon glyphicon-trash"></span>
                         </button>
                     </td>
@@ -48,9 +45,9 @@ if (!session_id()) {
             </tbody>
         </table>
         <div>
-            <a href="<?php print wp_nonce_url(admin_url('admin.php?page=club/admin/calendarform.php')); ?>"
+            <a href="<?php print wp_nonce_url(admin_url('admin.php?page=club_events&view=form')); ?>"
                class="button button-primary">Neu</a>&nbsp;
-               <a href="<?php print wp_nonce_url(admin_url('admin.php?page=club/admin/calendarplaces.php')); ?>"
+               <a href="<?php print wp_nonce_url(admin_url('admin.php?page=club_events&view=places')); ?>"
                class="button button-primary">Orte Bearbeiten</a>
         </div>
     </div>
@@ -63,9 +60,22 @@ if (!session_id()) {
 <script type="text/javascript">
     jQuery(document).ready(function () {
         $ = jQuery.noConflict();
-
-        $('.btnEdit').on('click', function () {
-            alert($(this).data("uuid"));
+        var nonces = {
+<?php foreach ($events as $event) { ?>"<?php echo $event->getUuid() ?>": "<?php echo wp_create_nonce("club-delete-event-" . $event->getUuid()) ?>",
+<?php } ?>
+    };
+        $('.btnDelete').on('click', function () {
+            var uuid = $(this).data("uuid");
+            var name = $("."+uuid+"[name=name]").html();
+            if(confirm("Sind sie sicher, dass sie den Termin \""+name+"\" wirklich löschen?")){
+                club_ajax_post("calendar_delete_evnet", {"uuid": uuid, "nonce": nonces[uuid]}, function (resp) {
+                if(resp === "1") {
+                    location.reload();
+                } else {
+                    alert(resp);
+                }
+            });
+            }
         });
     });
 </script>

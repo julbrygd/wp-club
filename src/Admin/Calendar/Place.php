@@ -138,7 +138,7 @@ class Place implements \JsonSerializable {
             $this->new = false;
         } else if ($update) {
             $wpdb->update(
-                    $tablename, $tablename, array(
+                    $tablename, array(
                 "name" => $this->name,
                 "lng" => $this->lng,
                 "lat" => $this->lat,
