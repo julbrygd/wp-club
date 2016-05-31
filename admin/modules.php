@@ -70,3 +70,7 @@ $activ = $club->getModules()->getActivated();
         });
     });
 </script>
+
+<?php 
+var_dump(get_post_types(array('name' => 'club_event'),'objects') ); 
+var_dump(get_theme_mods());

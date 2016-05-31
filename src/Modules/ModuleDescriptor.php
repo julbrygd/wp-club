@@ -2,29 +2,83 @@
 
 namespace Club\Modules;
 
-class ModuleDescriptor implements \JsonSerializable{
+class ModuleDescriptor implements \JsonSerializable {
 
+    /**
+     *
+     * @var string 
+     */
     private $name;
     private $class;
+
+    /**
+     *
+     * @var array 
+     */
     private $caps;
+
+    /**
+     *
+     * @var string
+     */
     private $description;
+
+    /**
+     *
+     * @var Club\Admin\Module 
+     */
     private $instance;
+
+    /**
+     *
+     * @var string 
+     */
     private $version;
+
+    /**
+     *
+     * @var array 
+     */
     private $settings;
+
+    /**
+     *
+     * @var array 
+     */
     private $menu;
-    
-     public function __construct($name, $class, $caps, $description, $version, $settings, $menu) {
-        $this->name = $name;
-        $this->class = $class;
-        $this->caps = $caps;
-        $this->description = $description;
-        $this->version = $version;
-        $this->settings = $settings;
-        $this->menu = $menu;
+
+    /**
+     * 
+     * @var array
+     */
+    private $postTypes;
+
+    /**
+     * 
+     * @param array $data
+     */
+    public function __construct($data) {
+
+        $this->name = ModuleDescriptor::getData($data, "name", "");
+        $this->class = ModuleDescriptor::getData($data, "class", "");
+        $this->caps = ModuleDescriptor::getData($data, "caps", "");
+        $this->description = ModuleDescriptor::getData($data, "description", "");
+        $this->version = ModuleDescriptor::getData($data, "version", "1.0");
+        $this->settings = ModuleDescriptor::getData($data, "settings", array());
+        $this->menu = ModuleDescriptor::getData($data, "menu", array());
+        $this->postTypes = ModuleDescriptor::getData($data, "posttype", array());
     }
-    
-    public function getInstance(){
-        if($this->instance == null){
+
+    private static function getData($data, $key, $default) {
+        if (array_key_exists($key, $data)) {
+            return $data[$key];
+        } else {
+            return $default;
+        }
+    }
+
+    public function getInstance() {
+        if ($this->instance == null) {
             $this->instance = new $this->class;
             $this->instance->setClub(\Club\Club::getInstance());
             $this->instance->init();
@@ -67,6 +121,7 @@ class ModuleDescriptor implements \JsonSerializable{
         $this->caps = $caps;
         return $this;
     }
+
     public function getVersion() {
         return $this->version;
     }
@@ -79,7 +134,7 @@ class ModuleDescriptor implements \JsonSerializable{
         $this->version = $version;
         return $this;
     }
-    
+
     public function getMenu() {
         return $this->menu;
     }
@@ -89,13 +144,21 @@ class ModuleDescriptor implements \JsonSerializable{
         return $this;
     }
 
-    
     public function setSettings($settings) {
         $this->settings = $settings;
         return $this;
     }
 
-        public function jsonSerialize() {
+    public function getPostTypes() {
+        return $this->postTypes;
+    }
+
+    public function setPostTypes($postTypes) {
+        $this->postTypes = $postTypes;
+        return $this;
+    }
+
+    public function jsonSerialize() {
         return array(
             "name" => $this->name,
             "class" => $this->class,
@@ -103,7 +166,8 @@ class ModuleDescriptor implements \JsonSerializable{
             "description" => $this->description,
             "version" => $this->version,
             "settings" => $this->settings,
-            "menu" => $this->menu
+            "menu" => $this->menu,
+            "posttype" => $this->postTypes,
         );
     }
 

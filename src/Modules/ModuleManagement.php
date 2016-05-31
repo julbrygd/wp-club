@@ -17,10 +17,6 @@ class ModuleManagement extends \Club\Admin\Module {
     public function setClub($club) {
         $this->club = $club;
     }
-
-    public function addMenu() {
-        $this->club->add_menu("Club Module", 'club_admin', "club/admin/modules.php");
-    }
     
     public function toggle() {
         if (array_key_exists("action", $_POST) && $_POST['action'] == 'club_toggle_module') {

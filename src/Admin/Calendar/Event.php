@@ -60,6 +60,12 @@ class Event implements \JsonSerializable {
      */
     private $new;
 
+    /**
+     * 
+     * var integer
+     */
+    private $postId;
+
     public function __construct($uuid = null) {
         if ($uuid == NULL) {
             $this->uuid = Uuid::uuid4()->toString();
@@ -68,6 +74,7 @@ class Event implements \JsonSerializable {
             $this->uuid = $uuid;
             $this->new = FALSE;
         }
+        $this->postId = 0;
     }
 
     public function getUuid() {
@@ -94,7 +101,7 @@ class Event implements \JsonSerializable {
         $fmt = get_option('date_format') . " " . get_option("time_format");
         return $this->from->format($fmt);
     }
-    
+
     public function getToFormated() {
         $fmt = get_option('date_format') . " " . get_option("time_format");
         return $this->to->format($fmt);
@@ -134,6 +141,24 @@ class Event implements \JsonSerializable {
         return $this;
     }
 
+    /**
+     * 
+     * @return integer
+     */
+    public function getPostId() {
+        return $this->postId;
+    }
+
+    /**
+     * 
+     * @param integer $postId
+     * @return \Club\Admin\Calendar\Event
+     */
+    public function setPostId($postId) {
+        $this->postId = $postId;
+        return $this;
+    }
+
     public function jsonSerialize() {
         return array(
             "uuid" => $this->uuid,
@@ -143,7 +168,8 @@ class Event implements \JsonSerializable {
             "from_offset" => $this->from->getOffset(),
             "to" => $this->to->getTimestamp(),
             "to_offset" => $this->to->getOffset(),
-            "place" => $this->place
+            "place" => $this->place,
+            "postId" => $this->postId
         );
     }
 
@@ -211,7 +237,8 @@ class Event implements \JsonSerializable {
                 "desc" => $this->descripion,
                 "from" => $this->from->format('Y-m-d H:i:s'),
                 "to" => $this->to->format('Y-m-d H:i:s'),
-                "placeid" => $this->place->getUuid()
+                "placeid" => $this->place->getUuid(),
+                "postid" => $this->postId
                     )
             );
             $this->new = false;
@@ -222,7 +249,8 @@ class Event implements \JsonSerializable {
                 "desc" => $this->descripion,
                 "from" => $this->from->format('Y-m-d H:i:s'),
                 "to" => $this->to->format('Y-m-d H:i:s'),
-                "placeid" => $this->place->getUuid()
+                "placeid" => $this->place->getUuid(),
+                "postid" => $this->postId
                     ), array(
                 "eventid" => $this->uuid
             ));
@@ -238,6 +266,7 @@ class Event implements \JsonSerializable {
         $ret->getFrom()->setTimezone(new \DateTimeZone(get_option('timezone_string')));
         $ret->getTo()->setTimezone(new \DateTimeZone(get_option('timezone_string')));
         $ret->setPlace(Place::findById($obj->placeid));
+        $ret->setPostId($obj->postid);
         return $ret;
     }
 
@@ -249,16 +278,23 @@ class Event implements \JsonSerializable {
         }
         return $ret;
     }
-    
-    public static function findById($id){
+
+    /**
+     * 
+     * @global type $wpdb
+     * @param interger $id
+     * @return \Club\Admin\Calendar\Event
+     */
+    public static function findById($id) {
         global $wpdb;
-        return self::fromStdClass($wpdb->get_row( 
-                "SELECT * FROM " . Db::get_event_table(). " WHERE `" . Db::get_event_table() ."`.`eventid` = '".$id."'" 
-                ));
+        return self::fromStdClass($wpdb->get_row(
+                                "SELECT * FROM " . Db::get_event_table() . " WHERE `" . Db::get_event_table() . "`.`eventid` = '" . $id . "'"
+        ));
     }
 
     public function delete() {
         global $wpdb;
         return 1 == $wpdb->delete(Db::get_event_table(), array("eventid" => $this->uuid));
     }
+
 }

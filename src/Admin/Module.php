@@ -10,8 +10,6 @@ abstract class Module {
 
     public abstract function public_init();
 
-    public abstract function addMenu();
-
     public function install() {
         
     }

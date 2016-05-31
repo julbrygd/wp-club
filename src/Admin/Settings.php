@@ -18,10 +18,6 @@ use \Club\Admin\Module;
 class Settings extends Module {
     private $_club;
 
-    public function addMenu() {
-        $this->_club->add_menu("Einstellungen", "club_admin", "club/admin/settings.php");
-    }
-
     public function init() {
         
     }

@@ -250,7 +250,6 @@ if ($module != NULL) {
             }
             if (!error) {
                 club_ajax_post("calendar_save_event", data, function (resp) {
-                    alert(JSON.stringify(resp));
                     location.href = "<?php echo wp_nonce_url(admin_url('admin.php?page=club_events')) ?>";
                 });
             }

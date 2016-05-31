@@ -60,7 +60,10 @@ class Club {
 
     public function createMenu() {
         add_menu_page('Club', 'Club', 'club_member', $this->parrent_page, null, 'dashicons-id-alt');
-        //$this->add_menu("Club Roles", 'club_admin', 'club/admin/roles.php');
+        $this->add_menu("Club Roles", 'club_admin', 'club/admin/roles.php');
+        $this->add_menu("Club Module", 'club_admin', "club/admin/modules.php");
+        $this->add_menu("Einstellungen", "club_admin", "club/admin/settings.php");
+        
         $this->getModules()->registerMenus();
     }
 
@@ -87,9 +90,10 @@ class Club {
         header('Access-Control-Allow-Origin: *');
     }
 
-    public function init() {
-        add_action('send_headers', array(&$club, 'set_header'));
+    public function adminInit() {
+        add_action('send_headers', array(&$this, 'set_header'));
         $this->getModules()->runModules();
+        flush_rewrite_rules();
         foreach ($this->getModules()->getSettings() as $setting) {
             register_setting('club-settings', $setting["key"]);
         }
@@ -128,10 +132,10 @@ class Club {
     public static function run($base_path) {
         $club = Club::getInstance();
         $club->setBasePath($base_path);
-        add_action('admin_init', array(&$club, 'init'));
+        add_action('admin_init', array(&$club, 'adminInit'));
+        add_action("init", array(&$club, 'public_init'));
         add_action('admin_menu', array(&$club, 'createMenu'));
         add_action('admin_enqueue_scripts', array(&$club, 'add_scripts'));
-        add_action("init", array(&$club, 'public_init'));
     }
 
     public function setBasePath($basePath) {
@@ -214,6 +218,8 @@ class Club {
                 return $this->plugin_url;
             case "plugin_base":    
                 return $this->plugin_dir;
+            case "public_folder":
+                return $this->plugin_dir . DIRECTORY_SEPARATOR . "public";
         }
         return NULL;
     }

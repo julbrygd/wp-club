@@ -21,7 +21,7 @@ $events = Event::getAll();
                     <th>Name</th>
                     <th>Von</th>
                     <th>Bis</th>
-                    <th>Kategorie</th>
+                    <th>Artikel</th>
                     <th>&nbsp;</th>
                 </tr>
             </thead>
@@ -31,7 +31,7 @@ $events = Event::getAll();
                     <td class="<?php echo $event->getUuid()?>" name="name"><?php echo $event->getTitle() ?></td>
                     <td><?php echo $event->getFromFormated() ?></td>
                     <td><?php echo $event->getToFormated() ?></td>
-                    <td>&nbsp;</td>
+                    <td><a href="<?php echo get_permalink($event->getPostId());?>" target="_blank">Artikel</a></td>
                     <td>
                         <a class="btn btn-default btn-sm btnEdit" href="<?php print wp_nonce_url(admin_url('admin.php?page=club_events&view=form&uuid='.$event->getUuid())); ?>">
                             <span class="glyphicon glyphicon-pencil"></span>

@@ -31,12 +31,9 @@ class Modules implements \JsonSerializable {
         foreach (scandir($path) as $file) {
             if (substr($file, -4) == "json") {
                 $array = json_decode(file_get_contents($path . $file), true);
-                print_r($array);
-                if (!\array_key_exists("menu", $array)) {
-                    $array["menu"] = [];
-                }
+
                 $desc = new \Club\Modules\ModuleDescriptor(
-                        $array["name"], $array["class"], $array["caps"], $array["description"], $array["version"], $array["settings"], $array["menu"]
+                        $array
                 );
                 $this->addModule($desc, TRUE);
             }
@@ -68,7 +65,7 @@ class Modules implements \JsonSerializable {
                 $mod["menu"] = array();
             }
             $modules[$mod["name"]] = new Modules\ModuleDescriptor(
-                    $mod["name"], $mod["class"], $mod["caps"], $mod["description"], $mod["version"], $mod["settings"], $mod["menu"]
+                    $mod
             );
         }
         $obj->setModules($modules);
@@ -129,6 +126,7 @@ class Modules implements \JsonSerializable {
         foreach ($this->activated as $name) {
             $this->modules[$name]->getInstance();
             $this->modules[$name]->getInstance()->registerPages();
+            $this->registerPostTypes($this->modules[$name]);
         }
     }
 
@@ -141,6 +139,7 @@ class Modules implements \JsonSerializable {
     public function runPublicModules() {
         foreach ($this->activated as $name) {
             $this->modules[$name]->getInstance()->public_init();
+            $this->registerPostTypes($this->modules[$name]);
         }
     }
 
@@ -148,7 +147,6 @@ class Modules implements \JsonSerializable {
         $club = \Club\Club::getInstance();
         $baseDir = $club->plugin_base;
         foreach ($this->activated as $name) {
-            $this->modules[$name]->getInstance()->addMenu();
             $menus = $this->getModule($name)->getMenu();
             $this->registerJsonMenu($menus, $baseDir, $club, $name);
         }
@@ -219,6 +217,22 @@ class Modules implements \JsonSerializable {
             "modules" => $this->modules,
             "activated" => $this->activated
         );
+    }
+
+    /**
+     * 
+     * @param \Club\Modules\ModuleDescriptor $module
+     */
+    public function registerPostTypes($module) {
+        $types = $module->getPostTypes();
+        if (count($types) > 0) {
+            foreach ($types as $type) {
+                $key = $type["key"];
+                unset($type["key"]);
+                register_post_type($key, $type);
+                add_rewrite_endpoint($key, EP_ALL);
+            }
+        }
     }
 
 }

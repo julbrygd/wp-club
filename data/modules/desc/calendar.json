@@ -8,7 +8,8 @@
             "key": "google_maps_api_key",
             "displayName": "Google Maps API key",
             "type": "text"
-        }, {
+        }, 
+        {
             "key": "calender_time_format",
             "displayName": "Datum/Zeit Format",
             "type": "select",
@@ -25,5 +26,17 @@
             "file": "admin/calendar.php",
             "show": true
         }
-    }
+    },
+    "posttype": [
+        {
+            "key": "club_event",
+            "labels": {
+                "name": "Club Event"
+            },
+            "public": true,
+            "has_archive": true,
+            "supports": ["title", "editor", "thumbnail", "excerpt", "custom-fields"],
+            "taxonomies": ["category"]
+        }
+    ]
 }

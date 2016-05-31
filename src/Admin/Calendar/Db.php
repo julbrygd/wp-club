@@ -19,10 +19,13 @@ class Db {
     private static $SQL_PLACES = "CREATE TABLE `##PLACES_TABLE##` ( `placeid` VARCHAR(40) NOT NULL , `name` VARCHAR(255) NOT NULL , `lng` DOUBLE NOT NULL , `lat` DOUBLE NOT NULL , PRIMARY KEY (`placeid`)) ENGINE = InnoDB;";
     private static $SQL_EVENTS = "CREATE TABLE `##EVENT_TABLE##` ( `eventid` VARCHAR(40) NOT NULL , `title` VARCHAR(255) NOT NULL , `desc` TEXT NOT NULL , `from` DATETIME NOT NULL , `to` DATETIME NOT NULL , `placeid` VARCHAR(40) NOT NULL , PRIMARY KEY (`eventid`), INDEX `##WP_PREFIX##club_calendar_event_placeid` (`placeid`)) ENGINE = InnoDB;";
     private static $SQL_FK = "ALTER TABLE `##EVENT_TABLE##` ADD CONSTRAINT `club_calendar_event_place` FOREIGN KEY (`placeid`) REFERENCES `##PLACES_TABLE##`(`placeid`) ON DELETE RESTRICT ON UPDATE RESTRICT;";
-    private static $DB_VERSION = 3;
+    private static $DB_VERSION = 4;
     private static $DB_UPDATE = array(
         2 => array(),
-        3 => array()
+        3 => array(),
+        4 => array(
+            "ALTER TABLE `##EVENT_TABLE##` ADD `postid` INT NOT NULL AFTER `placeid`;"
+        )
     );
     
     public static function execute() {
