@@ -97,8 +97,11 @@ class Event implements \JsonSerializable {
         return $this->to;
     }
 
-    public function getFromFormated() {
-        $fmt = get_option('date_format') . " " . get_option("time_format");
+    public function getFromFormated($time = TRUE) {
+        $fmt = get_option('date_format');
+        if($time){
+            $fmt .= " " . get_option("time_format");
+        }
         return $this->from->format($fmt);
     }
 
@@ -270,10 +273,25 @@ class Event implements \JsonSerializable {
         return $ret;
     }
 
-    public static function getAll() {
+    /**
+     * 
+     * @global \Club\Admin\Calendar\type $wpdb
+     * @param \DateTime $after
+     * @param integer $limit
+     * @return @return \Club\Admin\Calendar\Event
+     */
+    public static function getAll($after = null, $limit = null) {
         global $wpdb;
         $ret = array();
-        foreach ($wpdb->get_results("SELECT * FROM `" . Db::get_event_table() . "`") as $obj) {
+        $where="";
+        if($after != null){
+            $where = " WHERE `from` >= '" . $after->format('Y-m-d H:i:s') ."' ";
+        }
+        $limitSQL = "";
+        if($limit != null){
+            $limitSQL = " LIMIT ".$limit;
+        }
+        foreach ($wpdb->get_results("SELECT * FROM `" . Db::get_event_table() . "`".$where." ORDER BY `from`".$limitSQL) as $obj) {
             $ret[] = self::fromStdClass($obj);
         }
         return $ret;

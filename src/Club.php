@@ -132,7 +132,9 @@ class Club {
     public static function run($base_path) {
         $club = Club::getInstance();
         $club->setBasePath($base_path);
-        add_action('admin_init', array(&$club, 'adminInit'));
+        add_action('admin_init', array(&$club, 'adminInit'));;
+        $modules = $club->getModules();
+        add_action( 'widgets_init',array(&$modules, 'registerWidgets'));
         add_action("init", array(&$club, 'public_init'));
         add_action('admin_menu', array(&$club, 'createMenu'));
         add_action('admin_enqueue_scripts', array(&$club, 'add_scripts'));

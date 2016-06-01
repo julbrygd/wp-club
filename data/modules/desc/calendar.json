@@ -38,5 +38,6 @@
             "supports": ["title", "editor", "thumbnail", "excerpt", "custom-fields"],
             "taxonomies": ["category"]
         }
-    ]
+    ],
+    "widgets": ["\\Club\\Widgets\\Events\\UpcommingEvents"]
 }

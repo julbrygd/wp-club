@@ -129,6 +129,14 @@ class Modules implements \JsonSerializable {
             $this->registerPostTypes($this->modules[$name]);
         }
     }
+    
+    public function registerWidgets() {
+        foreach ($this->activated as $name) {
+            foreach ($this->modules[$name]->getWidgets() as $widget_class){
+                register_widget($widget_class);
+            }
+        }
+    }
 
     public function addModuleScripts() {
         foreach ($this->activated as $name) {

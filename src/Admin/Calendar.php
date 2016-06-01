@@ -187,12 +187,17 @@ class Calendar extends Module {
             'type' => "event",
                 ), $atts
         );
+        $event_dir = $this->_club->public_folder . DIRECTORY_SEPARATOR . "event";
         switch ($atts["type"]) {
             case "event":
                 if ($atts['event_id'] != NULL) {
-                    $file = $this->_club->public_folder . DIRECTORY_SEPARATOR . "event" . DIRECTORY_SEPARATOR . "event.php";
+                    $file = $event_dir . DIRECTORY_SEPARATOR . "event.php";
                     include $file;
                 }
+                break;
+            case "overview":
+                $file = $event_dir . DIRECTORY_SEPARATOR . "overview.php";
+                include $file;
                 break;
         }
     }

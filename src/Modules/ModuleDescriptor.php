@@ -52,6 +52,12 @@ class ModuleDescriptor implements \JsonSerializable {
      * @var array
      */
     private $postTypes;
+    
+    /**
+     * 
+     * @var array
+     */
+    private $widgets;
 
     /**
      * 
@@ -67,6 +73,7 @@ class ModuleDescriptor implements \JsonSerializable {
         $this->settings = ModuleDescriptor::getData($data, "settings", array());
         $this->menu = ModuleDescriptor::getData($data, "menu", array());
         $this->postTypes = ModuleDescriptor::getData($data, "posttype", array());
+        $this->widgets = ModuleDescriptor::getData($data, "widgets", array());
     }
 
     private static function getData($data, $key, $default) {
@@ -157,8 +164,16 @@ class ModuleDescriptor implements \JsonSerializable {
         $this->postTypes = $postTypes;
         return $this;
     }
+    public function getWidgets() {
+        return $this->widgets;
+    }
 
-    public function jsonSerialize() {
+    public function setWidgets($widgets) {
+        $this->widgets = $widgets;
+        return $this;
+    }
+
+        public function jsonSerialize() {
         return array(
             "name" => $this->name,
             "class" => $this->class,
@@ -168,6 +183,7 @@ class ModuleDescriptor implements \JsonSerializable {
             "settings" => $this->settings,
             "menu" => $this->menu,
             "posttype" => $this->postTypes,
+            "widgets" => $this->widgets
         );
     }
 
