@@ -1,0 +1,20 @@
+{
+    "name": "list",
+    "class": "\\Club\\ListModule\\ListModule",
+    "caps": ["club_list_manager", "club_list_show"],
+    "description": "List Module",
+    "version": "1.0",
+    "settings": [],
+    "menu": {
+        "club_list": {
+            "slug": "club_list",
+            "title": "Listen Verwalten",
+            "caps": "club_list_manager",
+            "file": "admin/list.php",
+            "show": true
+        }
+    },
+    "posttype": [
+    ],
+    "widgets": []
+}
