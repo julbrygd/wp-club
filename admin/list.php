@@ -5,6 +5,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+$string = new Club\ListModule\Types\String("testField", "Test Field", "testList")
 ?>
 <div class="bootstrap-wrapper">
     <div class="container">
@@ -26,4 +28,5 @@
                class="button button-primary">Neu</a>&nbsp;
         </div>
     </div>
+    <?php echo $string->getCreateStatement() ?>
 </div>
