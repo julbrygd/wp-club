@@ -51,11 +51,11 @@ class Lists {
      */   
     private $version;
     
-    public function __construct($name, $displayName, $class) {
+    public function __construct($name, $displayName, $class, $targetClass) {
         $this->name = $name;
         $this->displayName = $displayName;
         $this->class = $class;
-        $o = new $class();
+        $o = new $targetClass();
         $this->version = $o->getVersion();
     }
 

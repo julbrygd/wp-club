@@ -124,7 +124,7 @@ class ListModule extends \Club\Admin\Module {
 
             $s = new SchemaTool($this->em);
             $s->updateSchema($obj->getMetaData(), true);
-            $list = new Lists(str_replace(" ", "_", $name), $name, $class);
+            $list = new Lists(str_replace(" ", "_", $name), $name, $class, $obj->getClass());
             $this->em->persist($list);
             $this->em->flush();
             echo json_encode(array("status" => "ok"));
