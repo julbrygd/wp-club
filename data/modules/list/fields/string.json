@@ -1,0 +1,23 @@
+{
+  "name": "string",
+  "type": "field",
+  "displayName": "String",
+  "options": {
+    "nullable": {
+      "type": "bool",
+      "true_val": "NOT NULL",
+      "false_val": "",
+      "default": true
+    },
+    "length": {
+      "type": "int",
+      "default": 30
+    }
+  },
+  "create": "{name} varchar({length%d}){options.nullable}",
+  "add_statements": {
+    "add": "ALTER TABLE {table} ADD {name} varchar({length%d}){options.nullable};"
+  },
+  "edit": "ALTER TABLE {table} ALTER COLUMN {name} varchar({length%d}){options.nullable};",
+  "delete": "ALTER TABLE {table} DROP COLUMN {name};"
+}

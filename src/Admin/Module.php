@@ -9,6 +9,8 @@ abstract class Module {
     public abstract function init();
 
     public abstract function public_init();
+    
+    public function activate() {}
 
     public function install() {
         

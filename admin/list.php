@@ -5,8 +5,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+$dao = \Club\Club::getInstance()->getDao("list");
 
-$string = new Club\ListModule\Types\String("testField", "Test Field", "testList")
+$lists = $dao->findAll();
 ?>
 <div class="bootstrap-wrapper">
     <div class="container">
@@ -20,7 +21,16 @@ $string = new Club\ListModule\Types\String("testField", "Test Field", "testList"
                 </tr>
             </thead>
             <tbody>
-                
+<?php    foreach ($lists as $key=>$list) { 
+    $c = $list->getClass();
+    $type = $c::getName();
+    ?>
+                <tr>
+                    <td><?php echo $list->getDisplayName() ?></td>
+                    <td><?php echo $type ?></td>
+                    <td></td>
+                </tr>
+<?php } ?>
             </tbody>
         </table>
         <div>
@@ -28,5 +38,4 @@ $string = new Club\ListModule\Types\String("testField", "Test Field", "testList"
                class="button button-primary">Neu</a>&nbsp;
         </div>
     </div>
-    <?php echo $string->getCreateStatement() ?>
 </div>

@@ -1,0 +1,21 @@
+{
+    "name": "list",
+    "type": "list",
+    "displayName": "List",
+    "options": {
+        "listName": {
+            "type": "string"
+        },
+        "id": {
+            "type": "string"
+        }
+    },
+    "listName": "{options.listName}",
+    "id": "{options.id}",
+    "fields": [
+        {
+            "name":"{options.id}",
+            "type": "id"
+        }
+    ]
+}

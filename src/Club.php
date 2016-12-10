@@ -17,9 +17,10 @@ class Club {
     private $plugin_dir;
     private $menus;
     private $pages;
+    private $em = null;
 
     private function __construct($file) {
-        if($file == null){
+        if ($file == null) {
             $file = dirname(dirname(__FILE__) . '/../../');
         }
         $this->plugin_dir = $file;
@@ -37,14 +38,14 @@ class Club {
             add_submenu_page($this->parrent_page, $title, $title, $caps, $slug);
         }
     }
-    
+
     public function add_menu_slug($module, $title, $caps, $slug, $file, $no_parrent = false, $parrent = null) {
         $this->menus[$slug] = array(
-            "slug"=>$slug,
-            "module"=>$module,
-            "file"=>$file
+            "slug" => $slug,
+            "module" => $module,
+            "file" => $file
         );
-        if($parrent == null){
+        if ($parrent == null) {
             $parrent = $this->parrent_page;
         }
         if ($no_parrent) {
@@ -63,7 +64,7 @@ class Club {
         $this->add_menu("Club Roles", 'club_admin', 'club/admin/roles.php');
         $this->add_menu("Club Module", 'club_admin', "club/admin/modules.php");
         $this->add_menu("Einstellungen", "club_admin", "club/admin/settings.php");
-        
+
         $this->getModules()->registerMenus();
     }
 
@@ -74,7 +75,7 @@ class Club {
         wp_register_script("bootstrap-adminjs", $this->plugin_url . "/js/jquery.datetimepicker.full.min.js", array('jquery'));
         wp_enqueue_script('ajax-script', $this->plugin_url . "/js/wp-ajax.js", array('jquery'));
         wp_localize_script('ajax-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
-        wp_register_script("mommentjs",  $this->plugin_url . "/js/moment-with-locales.min.js");
+        wp_register_script("mommentjs", $this->plugin_url . "/js/moment-with-locales.min.js");
 
         wp_register_style('jquery-ui-theme', $this->plugin_url . "/css/jquery-ui.min.css");
         wp_enqueue_script('ajax-script');
@@ -82,7 +83,7 @@ class Club {
         wp_enqueue_style('jquery-ui-theme');
         wp_enqueue_script('bootstrap-adminjs');
         wp_enqueue_script('jquery-ui-datepicker');
-        
+
         $this->getModules()->addModuleScripts();
     }
 
@@ -132,9 +133,10 @@ class Club {
     public static function run($base_path) {
         $club = Club::getInstance();
         $club->setBasePath($base_path);
-        add_action('admin_init', array(&$club, 'adminInit'));;
+        add_action('admin_init', array(&$club, 'adminInit'));
+        ;
         $modules = $club->getModules();
-        add_action( 'widgets_init',array(&$modules, 'registerWidgets'));
+        add_action('widgets_init', array(&$modules, 'registerWidgets'));
         add_action("init", array(&$club, 'public_init'));
         add_action('admin_menu', array(&$club, 'createMenu'));
         add_action('admin_enqueue_scripts', array(&$club, 'add_scripts'));
@@ -218,27 +220,27 @@ class Club {
         switch ($name) {
             case "plugin_url":
                 return $this->plugin_url;
-            case "plugin_base":    
+            case "plugin_base":
                 return $this->plugin_dir;
             case "public_folder":
                 return $this->plugin_dir . DIRECTORY_SEPARATOR . "public";
         }
         return NULL;
     }
-    
-    public function renderPage(){
+
+    public function renderPage() {
         $view = filter_input(INPUT_GET, "view");
         $view = $view != null ? $view : "";
         $slug = str_replace("admin_page_", "", str_replace("club_page_", "", get_current_screen()->base));
         $hash = Modules\Page::calcHash($slug, $view);
-        if(array_key_exists($hash, $this->pages)){
+        if (array_key_exists($hash, $this->pages)) {
             $page = $this->pages[$hash];
             $file = $page->getFile();
-            if(!file_exists($file) && $file[0] !== DIRECTORY_SEPARATOR){
+            if (!file_exists($file) && $file[0] !== DIRECTORY_SEPARATOR) {
                 $file = realpath($this->plugin_dir . "/" . $file);
             }
             include $file;
-        } else if(array_key_exists($slug, $this->menus)){
+        } else if (array_key_exists($slug, $this->menus)) {
             include $this->menus[$slug]["file"];
         }
     }
@@ -249,6 +251,51 @@ class Club {
      */
     public function registerPage($page) {
         $this->pages[$page->getMd5()] = $page;
+    }
+
+    /**
+     * 
+     * @return Doctrine\ORM\EntityManager
+     */
+    public function getEm() {
+        if ($this->em == null) {
+            global $wpdb;
+            $dsn = array(
+                'driver' => 'pdo_mysql',
+                'host' => DB_HOST,
+                'user' => DB_USER,
+                'password' => DB_PASSWORD,
+                'dbname' => DB_NAME,
+            );
+            $prefixHandler = new Tools\TablePrefix($wpdb->prefix . "club_");
+            $dbconfig = \Doctrine\ORM\Tools\Setup::createAnnotationMetadataConfiguration(array($this->plugin_dir . "/src/models"), true);
+            $evm = new \Doctrine\Common\EventManager();
+            $evm->addEventListener(\Doctrine\ORM\Events::loadClassMetadata, $prefixHandler);
+            $this->em = \Doctrine\ORM\EntityManager::create($dsn, $dbconfig, $evm);
+        }
+        return $this->em;
+    }
+    
+    public function getOption($name, $default = null){
+        return get_option("club_".$name, $default);
+    }
+    
+    public function setOption($name, $value){
+        $name = "club_".$name;
+        update_option($name, $value);
+        $options = get_option("club_options", array());
+        if(!in_array($name, $options)){
+            $options[] = $name;
+            update_option("club_options", $options);
+        }
+    }
+    
+    public function getModuleInstance($mod){
+        return $this->getModules()->getModuleInstance($mod);
+    }
+    
+    public function getDao($name){
+        return DaoRegistry::getInstance()->getDao($name, $this->em);
     }
 
 }

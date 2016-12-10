@@ -178,6 +178,7 @@ class Modules implements \JsonSerializable {
             $this->activated[] = $name;
             $module = $this->getModule($name);
             $caps = $module->getCaps();
+            $module->getInstance()->activate();
             $knownCaps = get_option('club_caps', array());
             $club_admin = get_role('club_admin');
             $admin = get_role('administrator');

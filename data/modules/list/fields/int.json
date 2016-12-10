@@ -1,0 +1,19 @@
+{
+  "name": "int",
+  "type": "field",
+  "displayName": "Integer",
+  "options": {
+    "nullable": {
+      "type": "bool",
+      "true_val": "NOT NULL",
+      "false_val": "",
+      "default": true
+    }
+  },
+  "create": "{name} int{options.nullable}",
+  "add_statements": {
+    "add": "ALTER TABLE {table} ADD {name} int{options.nullable};"
+  },
+  "edit": "ALTER TABLE {table} ALTER COLUMN {name} int{options.nullable};",
+  "delete": "ALTER TABLE {table} DROP COLUMN {name};"
+}
