@@ -39,3 +39,7 @@ $lists = $dao->findAll();
         </div>
     </div>
 </div>
+
+<?php
+var_dump(Club\Tools\ClassFinder::findSubclass('\Club\Tools\Types\PostTypes'));
+?>

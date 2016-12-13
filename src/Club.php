@@ -102,6 +102,7 @@ class Club {
 
     public function public_init() {
         $this->getModules()->runPublicModules();
+        Tools\Types\PostTypeManger::registerPostTypes();
     }
 
     public function loadModules() {
@@ -134,12 +135,13 @@ class Club {
         $club = Club::getInstance();
         $club->setBasePath($base_path);
         add_action('admin_init', array(&$club, 'adminInit'));
-        ;
         $modules = $club->getModules();
         add_action('widgets_init', array(&$modules, 'registerWidgets'));
         add_action("init", array(&$club, 'public_init'));
         add_action('admin_menu', array(&$club, 'createMenu'));
         add_action('admin_enqueue_scripts', array(&$club, 'add_scripts'));
+        add_action('load-post.php', array('\Club\Tools\Types\PostTypeManger', 'registerMetaBoxes'));
+        add_action('load-post-new.php', array('\Club\Tools\Types\PostTypeManger', 'registerMetaBoxes'));
     }
 
     public function setBasePath($basePath) {
