@@ -17,7 +17,11 @@ class RestrictedPagesBox implements MetaBoxesInterface {
     private $meta_key;
 
     public function __construct() {
-        $this->meta_key = 'club_restricted_allowed_roles';
+        $this->meta_key = self::getKeyAllowedRoles();
+    }
+    
+    public static function getKeyAllowedRoles(){
+        return 'club_restricted_allowed_roles';
     }
 
     public function form($post) {

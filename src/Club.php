@@ -142,6 +142,10 @@ class Club {
         add_action('admin_enqueue_scripts', array(&$club, 'add_scripts'));
         add_action('load-post.php', array('\Club\Tools\Types\PostTypeManger', 'registerMetaBoxes'));
         add_action('load-post-new.php', array('\Club\Tools\Types\PostTypeManger', 'registerMetaBoxes'));
+        foreach (Tools\ClassFinder::findSubclass('\Club\Tools\WordpressActionsInterface') as $class){
+            $o = new $class();
+            $o->init();
+        }
     }
 
     public function setBasePath($basePath) {
